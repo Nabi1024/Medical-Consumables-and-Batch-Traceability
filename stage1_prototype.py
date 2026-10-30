@@ -27,6 +27,7 @@
 
 import argparse
 import glob
+import json
 import math
 import os
 import re
@@ -489,14 +490,45 @@ class MockLLMProvider(LLMProvider):
     """
 
     def _build_answer(self, messages: List[Dict]) -> str:
-        user_q = [m["content"] for m in messages if m["role"] == "user"][-1]
-        sys_txt = [m["content"] for m in messages if m["role"] == "system"][0]
-        # 仅抓取真实文档来源（含 .md），排除提示词示例里的「文件名」占位
-        sources = [s for s in re.findall(r"【来源: ([^】]+)】", sys_txt) if ".md" in s]
+        # 兼容两种调用形态：
+        #  · RAG 路径（chat_app）：system 含「【来源: xxx.md】」检索片段，无工具结果块；
+        #  · Agent 路径（agent_core._synthesize）：工具结果以「【工具 X 返回】{json}」
+        #    形式烤进 system 文本（不会以 role=tool 传递，避免真实 LLM 接口报错），
+        #    且末尾会追加「请根据上述上下文回答」占位 user 消息，需排除。
+        user_msgs = [m["content"] for m in messages if m["role"] == "user"]
+        sys_txt = "\n".join(m["content"] for m in messages if m["role"] == "system")
+        real_user_q = user_msgs[0] if user_msgs else ""
+
+        # 制度来源文件名（RAG 路径的「【来源: xxx.md】」标记）
+        sources: List[str] = re.findall(r"【来源:\s*([^】]+\.md)】", sys_txt)
+        sources = list(dict.fromkeys(sources))
+
+        # Agent 路径：解析烤进提示词的「【工具 X 返回】{json}」结果块
+        tool_blocks: List[str] = []
+        for seg in re.split(r"【工具\s*", sys_txt):
+            m = re.match(r"([^】]+?)\s*返回】\s*(\{.*\})\s*$", seg, re.DOTALL)
+            if not m:
+                continue
+            name = m.group(1).strip()
+            try:
+                obj = json.loads(m.group(2))
+                part = obj.get("summary") or m.group(2)
+            except Exception:
+                part = m.group(2)
+            tool_blocks.append(f"· 【{name}】{part}")
+
         head = "[离线 Mock 回复 · 未调用真实大模型，配置 LLM_API_KEY 后即为真实生成]\n"
+        if tool_blocks:
+            body = "根据已执行工具返回的结果，综合答复如下：\n" + "\n".join(tool_blocks) + "\n"
+        elif real_user_q and "请根据上述上下文回答" not in real_user_q:
+            body = f"针对您的问题「{real_user_q}」，"
+        else:
+            body = ""
         if sources:
-            head += "已检索到相关制度来源：" + "、".join(dict.fromkeys(sources)) + "\n"
-        return head + f"问题：{user_q}\n（请结合上方系统提示中的制度片段作答）"
+            body += "已检索到相关制度来源：" + "、".join(sources) + "\n"
+        if not tool_blocks and not sources:
+            body = "暂无相关制度或数据可参考。"
+        return head + body
 
     def chat(self, messages: List[Dict], **kwargs) -> str:
         return self._build_answer(messages)

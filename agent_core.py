@@ -717,8 +717,10 @@ class AgentHarness:
                               "input_args": decision.args, "latency_ms": latency,
                               "result_summary": summary, "status": status})
                 # 把工具结果作为 role=tool 消息回填，供模型后续决策/综合
+                # 同时携带可读 summary：真实 LLM 与离线 Mock 都能据此生成自然回答
+                payload = {"summary": summary, "data": res.get("data", {})}
                 messages.append({"role": "tool", "name": tool.name,
-                                 "content": json.dumps(res.get("data", {}), ensure_ascii=False)})
+                                 "content": json.dumps(payload, ensure_ascii=False)})
                 state["done_tools"].append(tool.name)
             except Exception as e:
                 latency = int((time.time() - t0) * 1000)
