@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>清禾综合医院 · AI 数智化后流程图</title>
+<style>
+  body { margin:0; background:#f1f5f9; color:#0f172a; font-family:-apple-system,Segoe UI,Microsoft YaHei,Helvetica,Arial,sans-serif; }
+  header { background:#0f172a; color:#fff; padding:18px 28px; }
+  header h1 { margin:0; font-size:19px; font-weight:700; }
+  header p { margin:6px 0 0; font-size:13px; opacity:.8; }
+  .wrap { max-width:1200px; margin:22px auto; padding:0 16px; }
+  .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+  .card { background:#fff; border-left:5px solid; border-radius:10px; padding:14px 16px; box-shadow:0 3px 12px rgba(15,23,42,.07); }
+  .card h3 { margin:0 0 6px; font-size:14.5px; }
+  .card p { margin:0; font-size:12.5px; color:#475569; line-height:1.7; }
+  .c1 { border-color:#4f46e5; } .c2 { border-color:#0d9488; } .c3 { border-color:#0f172a; }
+  .card svg { width:18px; height:18px; vertical-align:-3px; margin-right:4px; }
+  .box { background:#fff; border-radius:14px; box-shadow:0 4px 18px rgba(15,23,42,.08); padding:10px; }
+  .note { font-size:12.5px; color:#475569; margin:14px 4px 0; line-height:1.7; }
+  .note b { color:#0f172a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>清禾综合医院 · 医用耗材与批次追溯 — AI 数智化后流程</h1>
+  <p>原则：常规校验交给 AI，不可逆/治理决策仍留人工（HITL 精简而非取消）· 数据院内私有化</p>
+</header>
+<div class="wrap">
+  <div class="cards">
+    <div class="card c1">
+      <h3>痛点① 费钱费时</h3>
+      <p><b>AI 解法：</b>三口径自动融合生成单一可信库存视图；OCR/视觉自动比对批次；预测性补货。替代人工对账、盘点与录入，工时大幅下降。</p>
+    </div>
+    <div class="card c2">
+      <h3>痛点② 人工审核</h3>
+      <p><b>AI 解法：</b>AI 处理 100% 常规校验，仅约 5% 异常转入人工（HITL 精简）。傅景保留否决权、顾明岚保留口径签字权，红线不变。</p>
+    </div>
+    <div class="card c3">
+      <h3>痛点③ 数据隐私</h3>
+      <p><b>合规解法：</b>院内私有化部署、数据不出院；字段级脱敏；全程审计留痕；等保2.0三级；模型本地推理不上云。满足个保法/数据安全法。</p>
+    </div>
+  </div>
+  <div class="box">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1500" font-family="-apple-system,Segoe UI,Microsoft YaHei,Helvetica,Arial,sans-serif" style="max-width:100%;height:auto;background:#ffffff">
+
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/></marker>
+  <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#dc2626"/></marker>
+  <marker id="arrowGray" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/></marker>
+  <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/></marker>
+  <marker id="arrowTeal" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#0d9488"/></marker>
+  <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#0f172a" flood-opacity="0.14"/></filter>
+</defs>
+
+<rect x="175.0" y="30" width="250" height="54" rx="27.0" ry="27.0" fill="#16a34a" stroke="#15803d" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff"><tspan x="300.0" y="48.25">开始 · 使用计划</tspan><tspan x="300.0" y="65.75">(AI 汇总排程+历史用量→智能请领建议)</tspan></text>
+<rect x="175.0" y="120.0" width="250" height="74" rx="12" ry="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300.0" y="148.25">① 库存统一视图</tspan><tspan x="300.0" y="165.75">AI 融合 现存量/已预留/在途 → 单一可信</tspan></text>
+<polygon points="300,224.0 415.0,274 300,324.0 185.0,274" fill="#fff7e6" stroke="#d97706" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300" y="265.25">AI 判库存可满足</tspan><tspan x="300" y="282.75">手术且未被预留?</tspan></text>
+<rect x="175.0" y="360.0" width="250" height="74" rx="12" ry="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300.0" y="388.25">② 科室领用</tspan><tspan x="300.0" y="405.75">AI 自动生成领用单·草稿自动暂存同步</tspan></text>
+<rect x="175.0" y="470.0" width="250" height="74" rx="12" ry="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300.0" y="498.25">③ 使用扫码</tspan><tspan x="300.0" y="515.75">AI 视觉/OCR 自动比对内外包装批次</tspan></text>
+<polygon points="300,574.0 415.0,624 300,674.0 185.0,624" fill="#fff7e6" stroke="#d97706" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300" y="615.25">AI 判批次与</tspan><tspan x="300" y="632.75">出库一致?</tspan></text>
+<rect x="175.0" y="710.0" width="250" height="74" rx="12" ry="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300.0" y="738.25">④ 退库</tspan><tspan x="300.0" y="755.75">AI 主编号/版本自动匹配·回写可用</tspan></text>
+<polygon points="300,814.0 415.0,864 300,914.0 185.0,864" fill="#fff7e6" stroke="#d97706" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300" y="855.25">AI 判编码统一</tspan><tspan x="300" y="872.75">且已恢复可用?</tspan></text>
+<rect x="175.0" y="950.0" width="250" height="74" rx="12" ry="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300.0" y="978.25">⑤ 补货提醒</tspan><tspan x="300.0" y="995.75">AI 预测性补货(人工确认不下发)</tspan></text>
+<rect x="175.0" y="1060.0" width="250" height="74" rx="12" ry="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300.0" y="1088.25">⑥ 验收 (REQ-6)</tspan><tspan x="300.0" y="1105.75">AI 自动统计 完整率/误发率</tspan></text>
+<rect x="175.0" y="1170" width="250" height="54" rx="27.0" ry="27.0" fill="#0ea5e9" stroke="#0369a1" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff"><tspan x="300.0" y="1197.0">试点运行 / 每周复测改进</tspan></text>
+<line x1="300" y1="84" x2="300" y2="120.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="194.0" x2="300" y2="224.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="324.0" x2="300" y2="360.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="434.0" x2="300" y2="470.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="544.0" x2="300" y2="574.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="674.0" x2="300" y2="710.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="784.0" x2="300" y2="814.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="914.0" x2="300" y2="950.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="1024.0" x2="300" y2="1060.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="1134.0" x2="300" y2="1170" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="705.0" y="195" width="350" height="130" rx="12" ry="12" fill="#f0fdfa" stroke="#0d9488" stroke-width="2" filter="url(#sh)"/><rect x="705.0" y="195" width="350" height="26" rx="12" fill="#0d9488"/><rect x="705.0" y="208" width="350" height="13" fill="#0d9488"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#fff"><tspan x="717.0" y="213.0">AI 改造 · REQ-1 [原P0]</tspan></text><text text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a"><tspan x="880" y="241.0">三口径分裂 → 自动融合</tspan></text><text text-anchor="middle" font-size="11" font-weight="400" fill="#334155"><tspan x="880" y="249.0">AI 三口径融合引擎生成单一可信库存视图</tspan><tspan x="880" y="265.0">实时预警缺口/预留冲突(替代人工对账)</tspan><tspan x="880" y="281.0">治理口径仍由 顾明岚 终审签字</tspan></text>
+<rect x="705.0" y="405" width="350" height="120" rx="12" ry="12" fill="#f0fdfa" stroke="#0d9488" stroke-width="2" filter="url(#sh)"/><rect x="705.0" y="405" width="350" height="26" rx="12" fill="#0d9488"/><rect x="705.0" y="418" width="350" height="13" fill="#0d9488"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#fff"><tspan x="717.0" y="423.0">AI 改造 · REQ-4 [原P1]</tspan></text><text text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a"><tspan x="880" y="451.0">草稿/交接 → 自动暂存</tspan></text><text text-anchor="middle" font-size="11" font-weight="400" fill="#334155"><tspan x="880" y="459.0">领用单/草稿 AI 自动生成并同步</tspan><tspan x="880" y="475.0">交接模板化, 含编号/版本/状态/接手人</tspan><tspan x="880" y="491.0">模板定稿由 唐映秋 确认</tspan></text>
+<rect x="705.0" y="560" width="350" height="135" rx="12" ry="12" fill="#f0fdfa" stroke="#0d9488" stroke-width="2" filter="url(#sh)"/><rect x="705.0" y="560" width="350" height="26" rx="12" fill="#0d9488"/><rect x="705.0" y="573" width="350" height="13" fill="#0d9488"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#fff"><tspan x="717.0" y="578.0">AI 改造 · REQ-2 [原P0]</tspan></text><text text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a"><tspan x="880" y="606.0">内外包装不一致 → 自动比对</tspan></text><text text-anchor="middle" font-size="11" font-weight="400" fill="#334155"><tspan x="880" y="614.0">AI 视觉/OCR 内外包装批次自动一致性校验</tspan><tspan x="880" y="630.0">常规自动通过, 仅异常转人工</tspan><tspan x="880" y="646.0">傅景 保留否决权·不覆盖原记录</tspan></text>
+<rect x="705.0" y="800" width="350" height="135" rx="12" ry="12" fill="#f0fdfa" stroke="#0d9488" stroke-width="2" filter="url(#sh)"/><rect x="705.0" y="800" width="350" height="26" rx="12" fill="#0d9488"/><rect x="705.0" y="813" width="350" height="13" fill="#0d9488"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#fff"><tspan x="717.0" y="818.0">AI 改造 · REQ-3 [原P0]</tspan></text><text text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a"><tspan x="880" y="846.0">编码/退库 → 自动匹配回写</tspan></text><text text-anchor="middle" font-size="11" font-weight="400" fill="#334155"><tspan x="880" y="854.0">AI 主编号/版本自动匹配, 退库自动回写</tspan><tspan x="880" y="870.0">歧义才进人工修复队列(秦芮)</tspan><tspan x="880" y="886.0">映射由 顾明岚+傅景 共同确认</tspan></text>
+<rect x="705.0" y="1010" width="350" height="115" rx="12" ry="12" fill="#f0fdfa" stroke="#0d9488" stroke-width="2" filter="url(#sh)"/><rect x="705.0" y="1010" width="350" height="26" rx="12" fill="#0d9488"/><rect x="705.0" y="1023" width="350" height="13" fill="#0d9488"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#fff"><tspan x="717.0" y="1028.0">AI 改造 · REQ-5 [原P1]</tspan></text><text text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a"><tspan x="880" y="1056.0">数据时效/接口 → 监控兜底</tspan></text><text text-anchor="middle" font-size="11" font-weight="400" fill="#334155"><tspan x="880" y="1064.0">AI 数据时效监控, 超时标'待刷新'</tspan><tspan x="880" y="1080.0">接口中断用带时间戳只读快照</tspan><tspan x="880" y="1096.0">重连按业务编号去重补齐</tspan></text>
+<line x1="415" y1="274" x2="705.0" y2="274" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/><rect x="538.0" y="255.0" width="44" height="18" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626"><tspan x="560.0" y="268.0">否</tspan></text>
+<line x1="415" y1="624" x2="705.0" y2="624" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/><rect x="538.0" y="605.0" width="44" height="18" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626"><tspan x="560.0" y="618.0">否</tspan></text>
+<line x1="415" y1="864" x2="705.0" y2="864" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/><rect x="538.0" y="845.0" width="44" height="18" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626"><tspan x="560.0" y="858.0">否</tspan></text>
+<path d="M705.0,257 L120,257 L120,157 L175.0,157" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowGray)"/><rect x="210.0" y="194.0" width="140" height="18" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1"/><text text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b"><tspan x="280.0" y="207.0">统一后重试 ①</tspan></text>
+<path d="M705.0,622 L120,622 L120,507 L175.0,507" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowGray)"/><rect x="210.0" y="551.5" width="140" height="18" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1"/><text text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b"><tspan x="280.0" y="564.5">复核后重试 ③</tspan></text>
+<path d="M705.0,862 L120,862 L120,747 L175.0,747" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowGray)"/><rect x="210.0" y="791.5" width="140" height="18" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1"/><text text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b"><tspan x="280.0" y="804.5">修复后重试 ④</tspan></text>
+<line x1="705.0" y1="465" x2="425.0" y2="397" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowPurple)"/><rect x="543.0" y="412.0" width="44" height="18" rx="4" fill="#ffffff" stroke="#7c3aed" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed"><tspan x="565.0" y="425.0">贯穿</tspan></text>
+<line x1="705.0" y1="465" x2="425.0" y2="507" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowPurple)"/>
+<line x1="705.0" y1="1065" x2="425.0" y2="1097" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowPurple)"/><rect x="543.0" y="1062.0" width="44" height="18" rx="4" fill="#ffffff" stroke="#7c3aed" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed"><tspan x="565.0" y="1075.0">贯穿</tspan></text>
+<rect x="30" y="150" width="168" height="86" rx="10" ry="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="middle" font-size="12" font-weight="700" fill="#854d0e"><tspan x="114" y="163.5">人工减负</tspan><tspan x="114" y="180.5">100% 抽检</tspan></text>
+<text text-anchor="middle" font-size="14" font-weight="700" fill="#854d0e"><tspan x="114" y="192.0">↓</tspan></text>
+<text text-anchor="middle" font-size="11" font-weight="400" fill="#854d0e"><tspan x="114" y="204.0">仅 ~5% 异常</tspan><tspan x="114" y="220.0">转入人工(HITL)</tspan></text>
+<rect x="40" y="1290" width="560" height="95" rx="10" ry="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" filter="url(#sh)"/>
+<text text-anchor="start" font-size="12.5" font-weight="700" fill="#0f172a"><tspan x="60" y="1308.0">图例</tspan></text>
+<rect x="60" y="1320" width="22" height="14" rx="4" ry="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#0f172a"><tspan x="92" y="1331.0">AI 赋能主流程 (执行点)</tspan></text>
+<rect x="360" y="1320" width="22" height="14" rx="4" ry="4" fill="#fff7e6" stroke="#d97706" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#0f172a"><tspan x="392" y="1331.0">AI 决策/判断点</tspan></text>
+<rect x="60" y="1344" width="22" height="14" rx="4" ry="4" fill="#f0fdfa" stroke="#0d9488" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#0f172a"><tspan x="92" y="1355.0">AI 自动化改造卡 (原 REQ)</tspan></text>
+<rect x="60" y="1366" width="22" height="14" rx="4" ry="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#0f172a"><tspan x="92" y="1377.0">人工减负 / HITL 兜底</tspan></text>
+<line x1="330" y1="1328" x2="370" y2="1328" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/>
+<text text-anchor="start" font-size="10.5" font-weight="400" fill="#dc2626"><tspan x="378" y="1331.0">否→异常</tspan></text>
+<path d="M330,1358 L370,1358" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowGray)"/><rect x="280.0" y="1345.0" width="140" height="18" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1"/><text text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b"><tspan x="350.0" y="1358.0">人工处理后返回</tspan></text>
+<rect x="40" y="1400" width="1220" height="78" rx="12" ry="12" fill="#0f172a" stroke="#0f172a" stroke-width="0" filter="url(#sh)"/>
+<text text-anchor="start" font-size="13" font-weight="700" fill="#ffffff"><tspan x="60" y="1420.0">数据隐私合规护栏（贯穿全程）</tspan></text>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#e2e8f0"><tspan x="60" y="1435.0">院内私有化部署 · 数据不出院 · 字段级脱敏 · 全程审计留痕 · 等保2.0三级 · 按角色最小授权</tspan><tspan x="60" y="1453.0">合规依据：个人信息保护法 / 数据安全法 / 医疗卫生机构网络安全管理办法 · 模型本地推理, 不上传云端</tspan></text>
+</svg>
+  </div>
+  <p class="note">
+    <b>读法：</b>主线（蓝紫）全部由 AI 赋能——①库存统一视图→②科室领用→③使用扫码→④退库→⑤补货→⑥验收。
+    橙色菱形为 AI 判断点，条件不满足（<b>否</b>，红虚线）转入右侧对应改造卡，仅异常由具名人工（傅景/顾明岚/秦芮）兜底后（<b>灰虚线</b>）返回重试。
+    左侧黄色卡量化"人工减负"：审核量由 100% 抽检降至约 5% 异常。底部黑色色带为<b>数据隐私合规护栏</b>，贯穿全程。
+    所有原报告红线（不自动改临床选择、工程师不得单方设口径、唐映秋不能代签核）在 AI 方案中均保留。
+  </p>
+</div>
+</body>
+</html>

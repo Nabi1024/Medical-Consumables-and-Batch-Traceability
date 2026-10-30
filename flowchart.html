@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>清禾综合医院 · 医用耗材与批次追溯 项目流程图</title>
+<style>
+  body { margin:0; background:#f1f5f9; color:#0f172a; font-family:-apple-system,Segoe UI,Microsoft YaHei,Helvetica,Arial,sans-serif; }
+  header { background:#0f172a; color:#fff; padding:18px 28px; }
+  header h1 { margin:0; font-size:19px; font-weight:700; }
+  header p { margin:6px 0 0; font-size:13px; opacity:.8; }
+  .wrap { max-width:1180px; margin:22px auto; padding:0 16px; }
+  .card { background:#fff; border-radius:14px; box-shadow:0 4px 18px rgba(15,23,42,.08); padding:10px; }
+  .note { font-size:12.5px; color:#475569; margin:14px 4px 0; line-height:1.7; }
+  .note b { color:#0f172a; }
+</style>
+</head>
+<body>
+<header>
+  <h1>清禾综合医院 · 医用耗材与批次追溯</h1>
+  <p>业务需求发现报告 → 端到端流程图（含异常分支 / 人工兜底 / 角色职责）· 需求均为待验证假设</p>
+</header>
+<div class="wrap">
+  <div class="card">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1400" font-family="-apple-system,Segoe UI,Microsoft YaHei,Helvetica,Arial,sans-serif" style="max-width:100%;height:auto;background:#ffffff">
+
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+  </marker>
+  <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#dc2626"/>
+  </marker>
+  <marker id="arrowGray" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#64748b"/>
+  </marker>
+  <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/>
+  </marker>
+  <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#0f172a" flood-opacity="0.14"/>
+  </filter>
+</defs>
+
+<rect x="175.0" y="30" width="250" height="54" rx="27.0" ry="27.0" fill="#16a34a" stroke="#15803d" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff"><tspan x="300.0" y="48.0">开始 · 使用计划</tspan><tspan x="300.0" y="66.0">(科室提交手术耗材计划)</tspan></text>
+<rect x="175.0" y="120.0" width="250" height="74" rx="12" ry="12" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a"><tspan x="300.0" y="148.0">① 库存核查</tspan><tspan x="300.0" y="166.0">现存量 / 已预留 / 在途 三口径</tspan></text>
+<polygon points="300,224.0 415.0,274 300,324.0 185.0,274" fill="#fff7e6" stroke="#d97706" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300" y="265.25">三口径一致且</tspan><tspan x="300" y="282.75">库存可满足手术?</tspan></text>
+<rect x="175.0" y="360.0" width="250" height="74" rx="12" ry="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a"><tspan x="300.0" y="388.0">② 科室领用</tspan><tspan x="300.0" y="406.0">(领用≠实际使用同日)</tspan></text>
+<rect x="175.0" y="470.0" width="250" height="74" rx="12" ry="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a"><tspan x="300.0" y="498.0">③ 使用扫码</tspan><tspan x="300.0" y="516.0">植入耗材批次核对</tspan></text>
+<polygon points="300,574.0 415.0,624 300,674.0 185.0,624" fill="#fff7e6" stroke="#d97706" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300" y="615.25">内外包装批次</tspan><tspan x="300" y="632.75">与出库一致?</tspan></text>
+<rect x="175.0" y="710.0" width="250" height="74" rx="12" ry="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a"><tspan x="300.0" y="738.0">④ 退库</tspan><tspan x="300.0" y="756.0">主编号/事件时间/版本硬门槛</tspan></text>
+<polygon points="300,814.0 415.0,864 300,914.0 185.0,864" fill="#fff7e6" stroke="#d97706" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="12.5" font-weight="600" fill="#0f172a"><tspan x="300" y="855.25">编码统一且</tspan><tspan x="300" y="872.75">退库已恢复可用?</tspan></text>
+<rect x="175.0" y="950.0" width="250" height="74" rx="12" ry="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a"><tspan x="300.0" y="978.0">⑤ 补货提醒</tspan><tspan x="300.0" y="996.0">不自动改变临床选择</tspan></text>
+<rect x="175.0" y="1060.0" width="250" height="74" rx="12" ry="12" fill="#ffffff" stroke="#1d4ed8" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="600" fill="#0f172a"><tspan x="300.0" y="1088.0">⑥ 验收 (REQ-6)</tspan><tspan x="300.0" y="1106.0">单科室·完整率100%·误发0</tspan></text>
+<rect x="175.0" y="1170" width="250" height="54" rx="27.0" ry="27.0" fill="#0ea5e9" stroke="#0369a1" stroke-width="2" filter="url(#sh)"/><text text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff"><tspan x="300.0" y="1197.0">试点运行 / 每周复测改进</tspan></text>
+<line x1="300" y1="84" x2="300" y2="120.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="194.0" x2="300" y2="224.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="324.0" x2="300" y2="360.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="434.0" x2="300" y2="470.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="544.0" x2="300" y2="574.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="674.0" x2="300" y2="710.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="784.0" x2="300" y2="814.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="914.0" x2="300" y2="950.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="1024.0" x2="300" y2="1060.0" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="300" y1="1134.0" x2="300" y2="1170" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="702.0" y="200" width="360" height="132" rx="12" ry="12" fill="#fef2f2" stroke="#dc2626" stroke-width="2" filter="url(#sh)"/><rect x="702.0" y="200" width="360" height="26" rx="12" fill="#dc2626"/><rect x="702.0" y="213" width="360" height="13" fill="#dc2626"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#ffffff"><tspan x="714.0" y="218.0">REQ-1 [P0]</tspan></text><text text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a"><tspan x="882" y="246.0">库存口径分裂 → 术前缺货</tspan></text><text text-anchor="middle" font-size="11.5" font-weight="400" fill="#334155"><tspan x="882" y="244.5">现存量(库房)/已预留(科室)/在途(供应商)三方各算</tspan><tspan x="882" y="261.5">缺货率 8%→目标 2% 直接相关</tspan><tspan x="882" y="278.5">→ 先统一口径定义，不得工程师单方设定</tspan><tspan x="882" y="295.5">人工确认: 顾明岚 签字</tspan></text>
+<rect x="702.0" y="540" width="360" height="142" rx="12" ry="12" fill="#fef2f2" stroke="#dc2626" stroke-width="2" filter="url(#sh)"/><rect x="702.0" y="540" width="360" height="26" rx="12" fill="#dc2626"/><rect x="702.0" y="553" width="360" height="13" fill="#dc2626"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#ffffff"><tspan x="714.0" y="558.0">REQ-2 [P0]</tspan></text><text text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a"><tspan x="882" y="586.0">批次内外包装不一致 → 不可逆风险</tspan></text><text text-anchor="middle" font-size="11.5" font-weight="400" fill="#334155"><tspan x="882" y="584.5">外包装扫码成功，内包装批次≠出库批次</tspan><tspan x="882" y="601.5">→ 强制转人工，标注触发原因/接手人/确认时间</tspan><tspan x="882" y="618.5">傅景定规则 · 唐映秋分派 · 错误不覆盖原记录</tspan><tspan x="882" y="635.5">停止条件: 傅景 可否决上线</tspan></text>
+<rect x="702.0" y="790" width="360" height="142" rx="12" ry="12" fill="#fef2f2" stroke="#dc2626" stroke-width="2" filter="url(#sh)"/><rect x="702.0" y="790" width="360" height="26" rx="12" fill="#dc2626"/><rect x="702.0" y="803" width="360" height="13" fill="#dc2626"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#ffffff"><tspan x="714.0" y="808.0">REQ-3 [P0]</tspan></text><text text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a"><tspan x="882" y="836.0">编码不统一 / 退库未恢复可用</tspan></text><text text-anchor="middle" font-size="11.5" font-weight="400" fill="#334155"><tspan x="882" y="834.5">供应商码≠院内码，退库未回写可用状态</tspan><tspan x="882" y="851.5">主编号/事件时间/版本 为硬门槛</tspan><tspan x="882" y="868.5">歧义记录进人工修复队列(不进自动推荐)</tspan><tspan x="882" y="885.5">秦芮出映射 · 顾明岚+傅景 共同确认</tspan></text>
+<rect x="702.0" y="410" width="360" height="120" rx="12" ry="12" fill="#fef2f2" stroke="#dc2626" stroke-width="2" filter="url(#sh)"/><rect x="702.0" y="410" width="360" height="26" rx="12" fill="#dc2626"/><rect x="702.0" y="423" width="360" height="13" fill="#dc2626"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#ffffff"><tspan x="714.0" y="428.0">REQ-4 [P1]</tspan></text><text text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a"><tspan x="882" y="456.0">草稿暂存与交接确认 (贯穿)</tspan></text><text text-anchor="middle" font-size="11.5" font-weight="400" fill="#334155"><tspan x="882" y="454.5">便签/群消息补录未随单据交接</tspan><tspan x="882" y="471.5">→ 草稿可暂存+最后同步时间</tspan><tspan x="882" y="488.5">交接含 编号/版本/状态/未解决/接手人</tspan><tspan x="882" y="505.5">模板定稿: 唐映秋 确认</tspan></text>
+<rect x="702.0" y="1010" width="360" height="120" rx="12" ry="12" fill="#fef2f2" stroke="#dc2626" stroke-width="2" filter="url(#sh)"/><rect x="702.0" y="1010" width="360" height="26" rx="12" fill="#dc2626"/><rect x="702.0" y="1023" width="360" height="13" fill="#dc2626"/><text text-anchor="start" font-size="12.5" font-weight="700" fill="#ffffff"><tspan x="714.0" y="1028.0">REQ-5 [P1]</tspan></text><text text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a"><tspan x="882" y="1056.0">数据时效与接口兜底 (贯穿)</tspan></text><text text-anchor="middle" font-size="11.5" font-weight="400" fill="#334155"><tspan x="882" y="1054.5">每小时更新，超时标「待刷新」不作实时承诺</tspan><tspan x="882" y="1071.5">接口中断用带时间戳只读快照</tspan><tspan x="882" y="1088.5">重连按业务编号去重补齐，人工流程继续</tspan><tspan x="882" y="1105.5">阻断/提示选择: 顾明岚+傅景 确认</tspan></text>
+<line x1="415" y1="274" x2="702.0" y2="274" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/><rect x="536.5" y="255.0" width="44" height="18" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626"><tspan x="558.5" y="268.0">否</tspan></text>
+<line x1="415" y1="624" x2="702.0" y2="624" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/><rect x="536.5" y="605.0" width="44" height="18" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626"><tspan x="558.5" y="618.0">否</tspan></text>
+<line x1="415" y1="864" x2="702.0" y2="864" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/><rect x="536.5" y="845.0" width="44" height="18" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#dc2626"><tspan x="558.5" y="858.0">否</tspan></text>
+<path d="M702.0,262 L120,262 L120,157 L175.0,157" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowGray)"/><rect x="213.25" y="196.5" width="132" height="18" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1"/><text text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b"><tspan x="279.25" y="209.5">统一口径后重试 ①</tspan></text>
+<path d="M702.0,602 L120,602 L120,507 L175.0,507" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowGray)"/><rect x="213.25" y="541.5" width="132" height="18" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1"/><text text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b"><tspan x="279.25" y="554.5">转人工复核后重试 ③</tspan></text>
+<path d="M702.0,852 L120,852 L120,747 L175.0,747" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowGray)"/><rect x="213.25" y="786.5" width="132" height="18" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1"/><text text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b"><tspan x="279.25" y="799.5">人工修复后重试 ④</tspan></text>
+<line x1="702.0" y1="470" x2="425.0" y2="397" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowPurple)"/><rect x="541.5" y="414.5" width="44" height="18" rx="4" fill="#ffffff" stroke="#7c3aed" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed"><tspan x="563.5" y="427.5">贯穿</tspan></text>
+<line x1="702.0" y1="470" x2="425.0" y2="507" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowPurple)"/>
+<line x1="702.0" y1="1070" x2="425.0" y2="1097" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowPurple)"/><rect x="541.5" y="1064.5" width="44" height="18" rx="4" fill="#ffffff" stroke="#7c3aed" stroke-width="1"/><text text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed"><tspan x="563.5" y="1077.5">贯穿</tspan></text>
+<rect x="40" y="1290" width="560" height="95" rx="10" ry="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" filter="url(#sh)"/>
+<text text-anchor="start" font-size="12.5" font-weight="700" fill="#0f172a"><tspan x="60" y="1308.0">图例</tspan></text>
+<rect x="60" y="1320" width="22" height="14" rx="4" ry="4" fill="#ffffff" stroke="#1d4ed8" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#0f172a"><tspan x="92" y="1331.0">主流程步骤 (执行点)</tspan></text>
+<rect x="320" y="1320" width="22" height="14" rx="4" ry="4" fill="#fff7e6" stroke="#d97706" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#0f172a"><tspan x="352" y="1331.0">决策/判断点</tspan></text>
+<rect x="60" y="1344" width="22" height="14" rx="4" ry="4" fill="#fef2f2" stroke="#dc2626" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#0f172a"><tspan x="92" y="1355.0">P0 高风险 / 不可逆 (须人工兜底)</tspan></text>
+<rect x="60" y="1366" width="22" height="14" rx="4" ry="4" fill="#eff6ff" stroke="#2563eb" stroke-width="2" filter="url(#sh)"/>
+<text text-anchor="start" font-size="11.5" font-weight="400" fill="#0f172a"><tspan x="92" y="1377.0">P1 优化项 / 贯穿机制</tspan></text>
+<line x1="300" y1="1328" x2="340" y2="1328" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowRed)"/>
+<text text-anchor="start" font-size="10.5" font-weight="400" fill="#dc2626"><tspan x="348" y="1331.0">否→异常</tspan></text>
+<path d="M300,1358 L340,1358" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6,5" marker-end="url(#arrowGray)"/><rect x="254.0" y="1345.0" width="132" height="18" rx="4" fill="#ffffff" stroke="#64748b" stroke-width="1"/><text text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b"><tspan x="320.0" y="1358.0">人工处理后返回</tspan></text>
+<rect x="620" y="1290" width="620" height="95" rx="10" ry="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" filter="url(#sh)"/>
+<text text-anchor="start" font-size="12.5" font-weight="700" fill="#0f172a"><tspan x="640" y="1308.0">角色与职责边界</tspan></text>
+<text text-anchor="start" font-size="10.5" font-weight="400" fill="#0f172a"><tspan x="640" y="1330.0">● 顾明岚：耗材管理主任 · 立项/口径签字/验收口径</tspan></text>
+<text text-anchor="start" font-size="10.5" font-weight="400" fill="#0f172a"><tspan x="940" y="1330.0">● 林亦舟：手术室护士 · 一线操作/异常暂停</tspan></text>
+<text text-anchor="start" font-size="10.5" font-weight="400" fill="#0f172a"><tspan x="640" y="1352.0">● 唐映秋：采购管理员 · 分派/交接模板/不能代签核</tspan></text>
+<text text-anchor="start" font-size="10.5" font-weight="400" fill="#0f172a"><tspan x="940" y="1352.0">● 秦芮：物资工程师 · 数据口径/接口/映射草案</tspan></text>
+<text text-anchor="start" font-size="10.5" font-weight="400" fill="#0f172a"><tspan x="640" y="1374.0">● 傅景：院感质控专员 · 红线否决/留痕规则</tspan></text>
+<text text-anchor="start" font-size="10.5" font-weight="400" fill="#0f172a"><tspan x="940" y="1374.0">● 叶书：临床科室主任 · 服务侧验收/反馈闭环</tspan></text>
+</svg>
+  </div>
+  <p class="note">
+    <b>读法：</b>左侧绿色为起点，沿蓝色主线依次经过 ①库存核查 → ②科室领用 → ③使用扫码 → ④退库 → ⑤补货 → ⑥验收。
+    橙色菱形为判断点：条件不满足（<b>否</b>，红虚线）即转入右侧对应 REQ 异常处理；人工确认/修复后（<b>灰虚线</b>）返回原步骤重试。
+    REQ-4 / REQ-5 为贯穿全程机制（紫虚线）。所有 P0 高风险环节均设有具名人工接收人与否决权，体现「不可逆动作前确定性校验」原则。
+  </p>
+</div>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>医用耗材批次追溯智能助手 · 操作员问答</title>
+<style>
+  /* ===== 基础布局 ===== */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f3f5f9; color: #1f2937; height: 100vh; display: flex; flex-direction: column;
+  }
+  header {
+    background: linear-gradient(90deg, #1e6fd9, #2f8be0); color: #fff; padding: 14px 20px;
+    font-size: 16px; font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,.08);
+  }
+  header small { font-weight: 400; opacity: .85; margin-left: 8px; }
+  /* ===== 消息区 ===== */
+  #messages { flex: 1; overflow-y: auto; padding: 18px 16px; }
+  .row { display: flex; margin: 12px 0; }
+  .row.user { justify-content: flex-end; }
+  .row.assistant { justify-content: flex-start; }
+  .bubble {
+    max-width: 76%; padding: 10px 14px; border-radius: 12px; line-height: 1.6; font-size: 14px;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .row.user .bubble { background: #1e6fd9; color: #fff; border-bottom-right-radius: 4px; }
+  .row.assistant .bubble { background: #fff; border: 1px solid #e3e8ef; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  /* 打字机光标 */
+  .caret::after { content: "▋"; color: #1e6fd9; animation: blink 1s steps(1) infinite; margin-left: 1px; }
+  @keyframes blink { 50% { opacity: 0; } }
+  /* ===== 状态提示条 ===== */
+  #status {
+    display: none; align-self: center; margin: 6px auto; padding: 6px 14px; font-size: 13px;
+    background: #fff7e6; color: #ad6800; border: 1px solid #ffe1a8; border-radius: 20px;
+  }
+  /* ===== 引用来源 ===== */
+  .sources { margin-top: 10px; border-top: 1px dashed #e3e8ef; padding-top: 8px; }
+  .sources summary { cursor: pointer; font-size: 12px; color: #2f8be0; outline: none; }
+  .src-item { background: #f6f9ff; border: 1px solid #e3eefc; border-radius: 8px; padding: 8px 10px; margin: 6px 0; font-size: 12px; }
+  .src-item .doc { font-weight: 600; color: #1e6fd9; }
+  .src-item .snip { color: #5b6573; margin-top: 3px; }
+  .src-item .score { float: right; color: #9aa4b2; }
+  /* ===== 错误条 ===== */
+  #error { display: none; margin: 8px 16px; padding: 8px 12px; background: #fff1f0; color: #cf1322;
+           border: 1px solid #ffccc7; border-radius: 8px; font-size: 13px; }
+  /* ===== 输入区 ===== */
+  #input-bar { display: flex; gap: 10px; padding: 12px 16px; background: #fff; border-top: 1px solid #e3e8ef; }
+  #question { flex: 1; resize: none; height: 46px; padding: 10px 12px; border: 1px solid #cfd6e0;
+              border-radius: 10px; font-size: 14px; outline: none; }
+  #question:focus { border-color: #1e6fd9; }
+  #send { width: 84px; border: none; border-radius: 10px; background: #1e6fd9; color: #fff;
+          font-size: 14px; cursor: pointer; }
+  #send:disabled { background: #a9c4ec; cursor: not-allowed; }
+</style>
+</head>
+<body>
+  <header>医用耗材批次追溯智能助手 <small>操作员问答入口</small></header>
+  <div id="status">正在检索耗材法规、院内 SOP 文档…</div>
+  <div id="messages"></div>
+  <div id="error"></div>
+  <div id="input-bar">
+    <textarea id="question" placeholder="请输入与耗材追溯、效期、不良事件等相关的提问…（Enter 发送，Shift+Enter 换行）"></textarea>
+    <button id="send">发送</button>
+  </div>
+
+<script>
+// ===================== 鉴权守卫（决策②：/chat 同步接入 JWT） =====================
+function getToken() {
+  return (document.cookie.split('; ').find(x => x.startsWith('token=')) || '').split('=')[1] || '';
+}
+// 进入页面即检查登录态：无 token 直接跳登录页
+(function guard() { if (!getToken()) { location.href = '/login'; } })();
+
+// ===================== 全局状态 =====================
+let sessionId = null;            // 首次对话后由 done 事件回填
+const messagesEl = document.getElementById("messages");
+const statusEl = document.getElementById("status");
+const errorEl = document.getElementById("error");
+const qEl = document.getElementById("question");
+const sendEl = document.getElementById("send");
+
+// ===================== 工具函数 =====================
+function scrollBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+
+// 新增一条消息气泡，返回内容节点便于后续增量写入
+function addBubble(role) {
+  const row = document.createElement("div");
+  row.className = "row " + role;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble" + (role === "assistant" ? " caret" : "");
+  row.appendChild(bubble);
+  messagesEl.appendChild(row);
+  scrollBottom();
+  return bubble;
+}
+
+function showError(code, msg) {
+  errorEl.style.display = "block";
+  errorEl.textContent = `[${code}] ${msg}`;
+  setTimeout(() => { errorEl.style.display = "none"; }, 6000);
+}
+
+// 渲染引用来源（可折叠）
+function renderSources(container, sources) {
+  if (!sources || !sources.length) return;
+  const details = document.createElement("details");
+  details.className = "sources";
+  const summary = document.createElement("summary");
+  summary.textContent = `📎 引用来源（${sources.length}）`;
+  details.appendChild(summary);
+  sources.forEach(s => {
+    const item = document.createElement("div");
+    item.className = "src-item";
+    item.innerHTML =
+      `<span class="score">相关度 ${Number(s.score).toFixed(2)}</span>` +
+      `<div class="doc">${escapeHtml(s.doc)}</div>` +
+      `<div class="snip">${escapeHtml(s.snippet)}</div>`;
+    details.appendChild(item);
+  });
+  container.appendChild(details);
+}
+
+function escapeHtml(t) {
+  return String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+}
+
+// ===================== 发送并消费 SSE =====================
+async function send() {
+  const question = qEl.value.trim();
+  if (!question) { showError(40001, "问题内容不能为空"); return; }
+
+  // 1) 用户气泡
+  addBubble("user").textContent = question;
+  qEl.value = "";
+
+  // 2) 助手气泡（带光标，等待流式）
+  const assistantBubble = addBubble("assistant");
+  let sourcesBuffer = [];
+  let firstToken = false;
+
+  // 状态提示：检索中
+  statusEl.style.display = "inline-block";
+  statusEl.textContent = "正在检索耗材法规、院内 SOP 文档…";
+  sendEl.disabled = true;
+
+  // 3) 发起 POST /chat，用 fetch + ReadableStream 解析 SSE（EventSource 仅支持 GET）
+  try {
+    const resp = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + getToken() },
+      body: JSON.stringify({ session_id: sessionId, question })
+    });
+
+    // 非 200：读取统一错误 JSON
+    if (!resp.ok) {
+      const errJson = await resp.json().catch(() => ({}));
+      if (resp.status === 401 || errJson.code === 40101) { location.href = '/login'; return; }
+      showError(errJson.code || resp.status, errJson.message || "请求失败");
+      statusEl.style.display = "none";
+      assistantBubble.textContent = "（请求失败）";
+      assistantBubble.classList.remove("caret");
+      sendEl.disabled = false;
+      return;
+    }
+
+    // 4) 逐块读取 SSE 文本，按空行切分事件
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buf = "";
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+
+      // SSE 以 "\n\n" 分隔事件
+      let idx;
+      while ((idx = buf.indexOf("\n\n")) !== -1) {
+        const raw = buf.slice(0, idx);
+        buf = buf.slice(idx + 2);
+        handleSseEvent(raw, assistantBubble, (s) => { sourcesBuffer = s; });
+      }
+    }
+    // 收尾：处理最后一段残留（若有）
+    if (buf.trim()) handleSseEvent(buf, assistantBubble, (s) => { sourcesBuffer = s; });
+
+    // 渲染引用来源
+    renderSources(assistantBubble, sourcesBuffer);
+    assistantBubble.classList.remove("caret");
+  } catch (e) {
+    showError(50001, "网络或流式读取异常：" + e.message);
+    assistantBubble.textContent = "（读取失败）";
+    assistantBubble.classList.remove("caret");
+  } finally {
+    statusEl.style.display = "none";
+    sendEl.disabled = false;
+    scrollBottom();
+  }
+}
+
+// 解析单个 SSE 事件块（可能含 event:/data: 多行）
+function handleSseEvent(raw, assistantBubble, setSources) {
+  let event = "message";
+  let dataStr = "";
+  raw.split("\n").forEach(line => {
+    if (line.startsWith("event:")) event = line.slice(6).trim();
+    else if (line.startsWith("data:")) dataStr += line.slice(5).trim();
+  });
+  if (!dataStr) return;
+  let data;
+  try { data = JSON.parse(dataStr); } catch { return; }
+
+  if (event === "status") {
+    // 状态提示文案（首字到达前持续显示）
+    statusEl.style.display = "inline-block";
+    statusEl.textContent = data.message || "处理中…";
+  } else if (event === "token") {
+    // 首个 token：隐藏状态条 + 移除光标（内容开始填充即「打字机」）
+    if (!firstToken) { firstToken = true; statusEl.style.display = "none"; assistantBubble.classList.remove("caret"); }
+    assistantBubble.textContent += data.delta;
+    scrollBottom();
+  } else if (event === "sources") {
+    setSources(data.sources || []);
+  } else if (event === "done") {
+    sessionId = data.session_id || sessionId;   // 回填会话 ID，后续续聊使用
+  } else if (event === "error") {
+    showError(data.code, data.message);
+  }
+}
+
+// ===================== 交互绑定 =====================
+sendEl.addEventListener("click", send);
+qEl.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+});
+</script>
+</body>
+</html>

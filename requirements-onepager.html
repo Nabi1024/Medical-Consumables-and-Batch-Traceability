@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>医用耗材与批次追溯系统 · 一页纸需求清单（评审稿 V1.0）</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; background:#e2e8f0; color:#0f172a; font-family:-apple-system,Segoe UI,Microsoft YaHei,Helvetica,Arial,sans-serif;
+         font-size:10.5px; line-height:1.42; padding:18px; }
+  .page { max-width:794px; margin:0 auto; background:#fff; padding:26px 30px; box-shadow:0 4px 18px rgba(15,23,42,.12); }
+  h1 { font-size:17px; margin:0 0 2px; }
+  .meta { color:#64748b; font-size:9.5px; margin-bottom:10px; display:flex; gap:14px; flex-wrap:wrap; border-bottom:1.5px solid #0f172a; padding-bottom:6px; }
+  h2 { font-size:12px; margin:10px 0 3px; padding-left:7px; border-left:4px solid #0d9488; }
+  table { width:100%; border-collapse:collapse; margin:2px 0 4px; }
+  th, td { border:1px solid #cbd5e1; padding:3px 6px; text-align:left; vertical-align:top; }
+  th { background:#f1f5f9; font-weight:700; }
+  .twocol { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+  ul { margin:2px 0 2px 16px; padding:0; }
+  li { margin:1px 0; }
+  .in { background:#f0fdf4; } .out { background:#fef2f2; }
+  .box { border:1px solid #cbd5e1; border-radius:5px; padding:5px 8px; }
+  .flow { background:#f8fafc; border:1px dashed #94a3b8; border-radius:5px; padding:5px 8px; font-size:10px; }
+  .tag { display:inline-block; background:#0f172a; color:#fff; border-radius:3px; padding:0 5px; font-size:9px; margin-right:3px; }
+  @media print { body { background:#fff; padding:0; } .page { box-shadow:none; max-width:none; width:100%; } }
+  @page { size:A4; margin:12mm; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>医用耗材与批次追溯系统 — 一页纸需求清单</h1>
+  <div class="meta">
+    <span>版本：V1.0（需求评审稿）</span><span>日期：2026-10-30</span>
+    <span>状态：待评审确认</span><span>用户：企业员工 + 管理员</span>
+    <span>决策基线：10 项均按架构师推荐默认</span>
+  </div>
+
+  <h2>一、需求决策基线（10 项）</h2>
+  <table>
+    <tr><th style="width:14%">维度</th><th style="width:42%">决策</th><th style="width:44%">对架构的影响</th></tr>
+    <tr><td>① 部署</td><td>院内私有化（A）；混合 C 备选</td><td>数据不出院，自建边缘/机房，本地运维</td></tr>
+    <tr><td>② 追溯粒度</td><td>批次级起步，预留 UDI 字段</td><td>数据量可控；避免单品级 RFID/并发压力</td></tr>
+    <tr><td>③ 组织形态</td><td>单机构起步，模型按多院区设计</td><td>RBAC＋组织树，后期扩展零改造</td></tr>
+    <tr><td>④ 审批流</td><td>可配置工作流引擎（B）</td><td>引入 BPM，流程变更免发版</td></tr>
+    <tr><td>⑤ 标识标准</td><td>GS1/UDI 优先，主数据含 UDI</td><td>需主数据治理，对接药监局编码库</td></tr>
+    <tr><td>⑥ 系统集成</td><td>必接 HIS/ERP/SPD；监管/供应商二期</td><td>API 网关＋主数据同步，事件驱动分期</td></tr>
+    <tr><td>⑦ 一致性</td><td>核心库存强一致，非核心最终一致</td><td>分布式事务仅限库存，其余事件溯源</td></tr>
+    <tr><td>⑧ 合规</td><td>等保三级＋关键操作电子签名</td><td>加密/审计/堡垒机/CA 签名全配套</td></tr>
+    <tr><td>⑨ 现场采集</td><td>移动扫码＋离线兜底（B）</td><td>移动端＋离线冲突解决，IoT 二期</td></tr>
+    <tr><td>⑩ 业财联动</td><td>批次↔发票↔验收 三单匹配（B）</td><td>对接税控/OCR 验真，不深入付款流</td></tr>
+  </table>
+
+  <h2>二、范围（In / Out）</h2>
+  <div class="twocol">
+    <div class="box in">
+      <b>本期包含（In）</b>
+      <ul>
+        <li>批次级全链路追溯（入库→领用→使用→退库）</li>
+        <li>库存三口径（现存/已预留/在途）统一可信视图</li>
+        <li>可配置领用/退库/异常审批工作流</li>
+        <li>移动扫码采集＋离线兜底</li>
+        <li>批次↔发票↔验收 三单匹配</li>
+        <li>等保三级安全与审计留痕</li>
+      </ul>
+    </div>
+    <div class="box out">
+      <b>本期不做（Out，二期）</b>
+      <ul>
+        <li>单品 UDI 级追溯、RFID 全量</li>
+        <li>监管平台直连、供应商协同门户</li>
+        <li>业财一体（付款/资金流）</li>
+        <li>IoT 自动采集（智能柜/秤重）</li>
+        <li>AI 预测补货（本报告 AI 方案）待二期评估</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>三、关键业务流程</h2>
+  <div class="flow">
+    <span class="tag">主线</span>使用计划 → 库存统一视图(三口径融合) → 领用(可配置审批) → 使用扫码(批次比对) → 退库(主编号回写) → 补货提醒 → 验收统计<br/>
+    <span class="tag">异常</span>批次不一致 / 编码歧义 → 转具名人工(管理员) → 标注原因/接手人/时间 → 留痕返回重试（不覆盖原记录）
+  </div>
+
+  <h2>四、核心数据实体</h2>
+  <table>
+    <tr><th style="width:22%">实体</th><th>说明</th><th style="width:30%">关键字段</th></tr>
+    <tr><td>耗材主数据</td><td>含 UDI/GS1 编码、品规、供应商</td><td>UDI、名称、规格、供应商ID</td></tr>
+    <tr><td>批次/库存</td><td>三口径拆分，防超卖</td><td>批号、现存量、已预留、在途</td></tr>
+    <tr><td>单据</td><td>领用单/退库单/扫码记录</td><td>单号、主编号、版本、状态</td></tr>
+    <tr><td>业财凭证</td><td>发票/验收单三单匹配</td><td>发票号、验真状态、匹配结果</td></tr>
+    <tr><td>组织/权限</td><td>用户/角色/组织树</td><td>角色、最小授权、院区</td></tr>
+    <tr><td>审计日志</td><td>防篡改留痕</td><td>操作人、时间、WORM</td></tr>
+  </table>
+
+  <h2>五、集成边界</h2>
+  <div class="twocol">
+    <div class="box in"><b>必做集成</b><ul><li>HIS（手术/医嘱）</li><li>ERP（财务/库存总账）</li><li>SPD（院内物流）</li></ul></div>
+    <div class="box out"><b>分期集成</b><ul><li>药监局 UDI 编码库</li><li>监管追溯平台</li><li>供应商协同门户</li></ul></div>
+  </div>
+
+  <h2>六、合规与安全约束</h2>
+  <ul>
+    <li>等保三级：加密传输/存储、堡垒机、渗透测试、安全审计</li>
+    <li>数据不出院（私有化）；字段级脱敏；按角色最小授权</li>
+    <li>关键操作电子签名（CA 合规）；审计日志 WORM/防篡改</li>
+    <li>合规依据：个保法 / 数据安全法 / 医疗卫生机构网络安全管理办法</li>
+  </ul>
+
+  <h2>七、非功能 & 验收口径</h2>
+  <div class="twocol">
+    <div class="box">
+      <b>非功能</b>
+      <ul><li>核心库存强一致，防手术前缺货/超卖</li><li>扫码响应 &lt;1s；移动端离线可用</li><li>本地高可用（双机）；可按多院区扩展</li></ul>
+    </div>
+    <div class="box">
+      <b>验收口径（试点科室）</b>
+      <ul><li>追溯完整率 100%，批次误发率 0</li><li>异常 100% 留痕可审计</li><li>等保三级测评通过</li><li>流程变更无需发版（可配置）</li></ul>
+    </div>
+  </div>
+
+  <h2>八、假设与开放项</h2>
+  <ul>
+    <li>单院区起步，数据模型已按多院区预留；硬件（边缘服务器/PDA 数量）按规模二期定</li>
+    <li>AI 数智化（自动核验/预测补货）见此前方案，本期仅预留接口，不在 V1 交付</li>
+    <li>报价参考此前方案报价单（¥1,630,000 含税，按最终规模重估）</li>
+  </ul>
+</div>
+</body>
+</html>

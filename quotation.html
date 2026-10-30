@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>报价单 · 医用耗材与批次追溯 AI 数智化平台</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; background:#e2e8f0; color:#0f172a; font-family:-apple-system,Segoe UI,Microsoft YaHei,Helvetica,Arial,sans-serif;
+         font-size:13px; line-height:1.6; padding:24px; }
+  .page { max-width:900px; margin:0 auto; background:#fff; padding:40px 44px; box-shadow:0 6px 24px rgba(15,23,42,.12); border-radius:6px; }
+  h1 { font-size:22px; margin:0 0 2px; }
+  .sub { color:#64748b; font-size:12.5px; margin-bottom:18px; }
+  .meta { display:flex; flex-wrap:wrap; gap:6px 28px; border-top:2px solid #0f172a; border-bottom:1px solid #cbd5e1;
+          padding:12px 0; margin-bottom:18px; font-size:12.5px; }
+  .meta div span { color:#64748b; }
+  table { width:100%; border-collapse:collapse; margin:6px 0 4px; }
+  th, td { border:1px solid #cbd5e1; padding:7px 9px; text-align:left; vertical-align:top; }
+  th { background:#f1f5f9; font-weight:700; font-size:12.5px; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  td.ctr, th.ctr { text-align:center; }
+  .cat { background:#0f172a; color:#fff; font-weight:700; }
+  .subt td { font-weight:700; background:#f8fafc; }
+  .total td { font-weight:800; background:#0f172a; color:#fff; font-size:14px; }
+  .terms { margin-top:18px; }
+  .terms h3 { font-size:14px; margin:14px 0 4px; border-left:4px solid #0d9488; padding-left:8px; }
+  .terms ul { margin:4px 0; padding-left:20px; }
+  .terms li { margin:3px 0; }
+  .disc { margin-top:16px; background:#fef9c3; border:1px solid #fde047; border-radius:6px; padding:12px 14px; font-size:12px; color:#713f12; }
+  .sign { display:flex; justify-content:space-between; margin-top:30px; font-size:12.5px; }
+  .sign div { width:46%; }
+  .sign .line { border-top:1px solid #0f172a; margin-top:34px; padding-top:4px; }
+  @media print { body { background:#fff; padding:0; } .page { box-shadow:none; max-width:none; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>项目报价单</h1>
+  <div class="sub">医用耗材与批次追溯 AI 数智化平台（院内私有化部署）</div>
+
+  <div class="meta">
+    <div><span>报价编号：</span>QH-AI-TRAC-2026-001</div>
+    <div><span>报价日期：</span>2026-10-23</div>
+    <div><span>有效期：</span>30 天（至 2026-11-22）</div>
+    <div><span>币种：</span>人民币（CNY，含 6% 增值税专票）</div>
+    <div style="width:100%"><span>甲方（采购方）：</span>清禾综合医院（示例，请替换为实际名称）</div>
+    <div style="width:100%"><span>乙方（供应方）：</span>________________________（请填写供应商全称）</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="ctr" style="width:42px">序号</th>
+        <th>模块 / 服务</th>
+        <th>内容说明</th>
+        <th class="ctr" style="width:48px">数量</th>
+        <th class="num" style="width:96px">单价(¥)</th>
+        <th class="num" style="width:104px">小计(¥)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="cat"><td colspan="6">A. 软件平台与 AI 能力（核心交付）</td></tr>
+      <tr><td class="ctr">1</td><td>批次追溯与统一管理平台</td><td>三口径（现存量/已预留/在途）融合引擎、统一库存可信视图、追溯链路管理</td><td class="ctr">1 套</td><td class="num">280,000</td><td class="num">280,000</td></tr>
+      <tr><td class="ctr">2</td><td>AI 批次核验引擎</td><td>视觉/OCR 内外包装批次自动比对、一致性校验、异常识别</td><td class="ctr">1 套</td><td class="num">240,000</td><td class="num">240,000</td></tr>
+      <tr><td class="ctr">3</td><td>智能补货与需求预测模块</td><td>基于手术排程与历史用量的预测性补货提醒（不自动改变临床选择）</td><td class="ctr">1 套</td><td class="num">150,000</td><td class="num">150,000</td></tr>
+      <tr><td class="ctr">4</td><td>实时库存视图与预警大屏</td><td>多端看板、缺口/预留冲突实时预警、移动端查询</td><td class="ctr">1 套</td><td class="num">120,000</td><td class="num">120,000</td></tr>
+      <tr><td class="ctr">5</td><td>数据隐私合规网关</td><td>字段级脱敏、全程审计留痕、按角色最小授权、合规报表</td><td class="ctr">1 套</td><td class="num">160,000</td><td class="num">160,000</td></tr>
+      <tr class="subt"><td colspan="4">A 小计</td><td class="num">—</td><td class="num">950,000</td></tr>
+
+      <tr class="cat"><td colspan="6">B. 部署与系统集成</td></tr>
+      <tr><td class="ctr">6</td><td>院内私有化部署实施</td><td>本地化安装、安全加固、等保2.0三级适配整改配合</td><td class="ctr">1 项</td><td class="num">130,000</td><td class="num">130,000</td></tr>
+      <tr><td class="ctr">7</td><td>系统接口对接</td><td>与 HIS / SPD / 供应商系统对接（按系统计，预估 3 个）</td><td class="ctr">3 个</td><td class="num">60,000</td><td class="num">180,000</td></tr>
+      <tr class="subt"><td colspan="4">B 小计</td><td class="num">—</td><td class="num">310,000</td></tr>
+
+      <tr class="cat"><td colspan="6">C. 边缘硬件（可选，支撑数据不出院本地推理）</td></tr>
+      <tr><td class="ctr">8</td><td>边缘推理服务器</td><td>院内本地 AI 推理，数据不出院（可复用院方现有资源）</td><td class="ctr">2 台</td><td class="num">45,000</td><td class="num">90,000</td></tr>
+      <tr><td class="ctr">9</td><td>工业级扫码 / PDA 终端</td><td>使用扫码、退库核对的移动采集终端（预估 20 台）</td><td class="ctr">20 台</td><td class="num">3,500</td><td class="num">70,000</td></tr>
+      <tr class="subt"><td colspan="4">C 小计（可选项）</td><td class="num">—</td><td class="num">160,000</td></tr>
+
+      <tr class="cat"><td colspan="6">D. 实施服务</td></tr>
+      <tr><td class="ctr">10</td><td>需求调研与数据治理</td><td>现状梳理、口径定义、映射规则（顾明岚/傅景确认）</td><td class="ctr">1 项</td><td class="num">50,000</td><td class="num">50,000</td></tr>
+      <tr><td class="ctr">11</td><td>用户培训与上线支持</td><td>角色化培训、上线护航、交接模板定稿（唐映秋确认）</td><td class="ctr">1 项</td><td class="num">40,000</td><td class="num">40,000</td></tr>
+      <tr class="subt"><td colspan="4">D 小计</td><td class="num">—</td><td class="num">90,000</td></tr>
+
+      <tr class="cat"><td colspan="6">E. 运维与支持（首年）</td></tr>
+      <tr><td class="ctr">12</td><td>一年期运维与技术支持</td><td>含模型迭代、接口维护、故障响应（7×12 小时）</td><td class="ctr">1 年</td><td class="num">120,000</td><td class="num">120,000</td></tr>
+      <tr class="subt"><td colspan="4">E 小计</td><td class="num">—</td><td class="num">120,000</td></tr>
+
+      <tr class="total"><td colspan="4">总报价（A+B+C+D+E，含税）</td><td class="num">—</td><td class="num">1,630,000</td></tr>
+    </tbody>
+  </table>
+
+  <div class="terms">
+    <h3>商务与合规条款</h3>
+    <ul>
+      <li><b>付款方式（3-4-2-1）：</b>合同签订后 7 个工作日内付 30% 预付款；上线初验合格付 40%；终验（运行满 1 个月）合格付 20%；质保期满（1 年）付 10%。</li>
+      <li><b>交付周期：</b>自合同生效起 12 周内完成部署上线（含 2 周试点科室运行）。</li>
+      <li><b>质保运维：</b>验收后 1 年免费运维；期满后按年续签（见第 12 项）。</li>
+      <li><b>含税说明：</b>以上报价含 6% 增值税专用发票；硬件进项税按实际抵扣。</li>
+      <li><b>等保测评：</b>第三方等保2.0三级测评费由甲方另行支付，不在本报价内，乙方配合整改。</li>
+      <li><b>差旅费用：</b>实施期间差旅实报实销或包干，于合同签订时约定。</li>
+      <li><b>报价假设：</b>适用于单院区、约 3,000–5,000 耗材品规、日均手术量中等规模的综合医院；多院区/超大规模需另行评估。</li>
+    </ul>
+
+    <div class="disc">
+      <b>合规声明：</b>本报价为<b>方案参考报价</b>，不构成正式投标或合同要约。正式采购须遵循《政府采购法》《招标投标法》及医院采购管理办法；金额达到公开招标限额的，应依法招标。涉及医疗数据处理的，须满足《个人信息保护法》《数据安全法》及医疗卫生机构网络安全相关规定，落实数据不出院与最小授权。所有价格均为示意，最终以双方签订的正式合同为准。
+    </div>
+
+    <div class="sign">
+      <div><b>甲方（采购方）</b><div class="line">单位盖章 / 授权代表签字：</div></div>
+      <div><b>乙方（供应方）</b><div class="line">单位盖章 / 授权代表签字：</div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
