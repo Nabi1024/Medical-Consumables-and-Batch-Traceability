@@ -1,0 +1,80 @@
+{# =========================================================================
+   对话审计与质控：按 操作员/时间/关键词/风险 检索会话；标记风险；导出 CSV。
+   ========================================================================= #}
+{% extends "base.html" %}
+{% block title %}对话审计与质控 · 管理后台{% endblock %}
+{% block content %}
+  <div class="card">
+    <h2>检索条件</h2>
+    <div class="row">
+      <div style="width:150px"><input id="f_operator" placeholder="操作员用户名"></div>
+      <div style="width:160px"><input id="f_start" type="date" title="起始日期"></div>
+      <div style="width:160px"><input id="f_end" type="date" title="结束日期"></div>
+      <div style="width:180px"><input id="f_keyword" placeholder="问答关键词"></div>
+      <div style="width:140px">
+        <select id="f_risk">
+          <option value="">全部风险</option>
+          <option value="1">仅风险</option>
+          <option value="0">仅正常</option>
+        </select>
+      </div>
+      <button class="btn primary" onclick="search(1)">查询</button>
+      <button class="btn" onclick="exportCsv()">导出 CSV</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>会话列表</h2>
+    <table id="sessTable">
+      <thead><tr><th>操作员</th><th>创建时间</th><th>首条问题</th><th>消息数</th><th>风险</th><th>操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const RISK={{ risk_types | tojson }};
+function params(page){
+  const p=new URLSearchParams();
+  p.set('page',page||1); p.set('size',50);
+  const o=document.getElementById('f_operator').value.trim();
+  const s=document.getElementById('f_start').value;
+  const e=document.getElementById('f_end').value;
+  const k=document.getElementById('f_keyword').value.trim();
+  const r=document.getElementById('f_risk').value;
+  if(o)p.set('operator',o); if(s)p.set('start',s+' 00:00:00');
+  if(e)p.set('end',e+' 23:59:59'); if(k)p.set('keyword',k); if(r)p.set('risk',r);
+  return p.toString();
+}
+function search(page=1){
+  api('/api/audit/conversations?'+params(page)).then(({ok,d})=>{
+    if(!ok){ toast(d.message||'查询失败'); return; }
+    const tb=document.querySelector('#sessTable tbody'); tb.innerHTML='';
+    (d.data.items||[]).forEach(it=>{
+      const tag = it.risk_flag
+        ? `<span class="tag danger">${it.risk_type||'风险'}</span>` : '<span class="tag ok">正常</span>';
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${it.operator||'未知'}</td><td class="muted">${it.created_at}</td>
+        <td>${((it.first_question)||'').slice(0,60)}</td><td>${it.msg_count}</td>
+        <td>${tag}</td>
+        <td><a class="btn sm" href="/admin/audit/${it.id}">查看/标记</a></td>`;
+      tb.appendChild(tr);
+    });
+  });
+}
+function exportCsv(){
+  // 带当前筛选条件导出（后端以附件返回 CSV）
+  const url='/api/audit/conversations/export?'+params(1);
+  fetch(url,{headers:authHeaders()}).then(r=>{
+    if(!r.ok){ toast('导出失败'); return; }
+    return r.blob();
+  }).then(b=>{
+    if(!b) return;
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download='audit_export.csv'; a.click();
+  });
+}
+search(1);
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{# 概览页：四项核心指标卡片 #}
+{% extends "base.html" %}
+{% block title %}概览 · 管理后台{% endblock %}
+{% block content %}
+  <div class="card"><h2>系统概览</h2>
+    <div class="stats">
+      <div class="stat"><div class="n">{{ stats.docs }}</div><div class="l">知识库文档数</div></div>
+      <div class="stat"><div class="n">{{ stats.sessions }}</div><div class="l">问答会话数</div></div>
+      <div class="stat"><div class="n" style="color:#dc2626">{{ stats.risk }}</div><div class="l">风险标记会话</div></div>
+      <div class="stat"><div class="n">{{ stats.logs }}</div><div class="l">管理员操作日志</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>快速入口</h2>
+    <div class="row">
+      <a class="btn primary" href="/admin/kb">上传制度文件</a>
+      <a class="btn" href="/admin/prompts">维护提示词模板</a>
+      <a class="btn" href="/admin/audit">质控审计对话</a>
+      <a class="btn" href="/admin/logs">查看操作日志</a>
+    </div>
+    <p class="muted" style="margin-top:14px">提示：所有管理员写操作（上传/删除/重建索引/模板编辑/风险标记）均自动写入操作日志，满足医械追溯审计留痕要求。</p>
+  </div>
+{% endblock %}

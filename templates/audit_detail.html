@@ -1,0 +1,62 @@
+{# =========================================================================
+   会话详情：完整问答流 + 引用 + 风险标记操作（标记/取消）。
+   ========================================================================= #}
+{% extends "base.html" %}
+{% block title %}会话详情 · 对话审计{% endblock %}
+{% block content %}
+  <div class="card">
+    <h2>会话详情</h2>
+    <div id="meta" class="muted" style="margin-bottom:12px"></div>
+    <div id="msgs"></div>
+  </div>
+
+  <div class="card">
+    <h2>风险标记（质控）</h2>
+    <div class="row">
+      <div style="width:220px">
+        <select id="riskType">
+          {% for r in risk_types %}<option value="{{r}}">{{r}}</option>{% endfor %}
+        </select>
+      </div>
+      <div style="flex:1;min-width:200px"><input id="riskNote" placeholder="备注（可选，如：台账数量与系统不符）"></div>
+      <button class="btn danger" onclick="flag()">标记为风险</button>
+      <button class="btn" onclick="unflag()">取消标记</button>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const SID='{{ session_id }}';
+function load(){
+  api('/api/audit/conversations/'+SID).then(({ok,d})=>{
+    if(!ok){ toast(d.message||'加载失败'); return; }
+    const s=d.data.session; const m=d.data.messages;
+    document.getElementById('meta').innerHTML=
+      `操作员：<b>${s.operator||'未知'}</b> ｜ 创建：${s.created_at} ｜ `+
+      (s.risk_flag?`<span class="tag danger">已标记：${s.risk_type||''}</span>`:`<span class="tag ok">未标记</span>`);
+    const box=document.getElementById('msgs');
+    box.innerHTML=m.map(x=>{
+      const who = x.role==='user'?'操作员':(x.role==='assistant'?'助手':'系统');
+      const cite = (x.citations||[]).length
+        ? `<div class="muted" style="font-size:12px;margin-top:6px">📎 引用：${(x.citations).map(c=>c.doc).join('、')}</div>`:'';
+      const risk = x.risk_flag?`<span class="tag danger" style="margin-left:6px">${x.risk_type||'风险'}</span>`:'';
+      return `<div style="margin-bottom:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px">
+        <b>${who}${risk}</b><div style="margin-top:6px;white-space:pre-wrap">${x.content}</div>${cite}</div>`;
+    }).join('');
+  });
+}
+function flag(){
+  api('/api/audit/conversations/'+SID+'/flag',{method:'POST',
+    headers:authHeaders({'Content-Type':'application/json'}),
+    body:JSON.stringify({risk_type:document.getElementById('riskType').value,
+                        note:document.getElementById('riskNote').value})})
+    .then(({ok,d})=>{ toast(ok&&d.code===0?'已标记为风险':'操作失败'); load(); });
+}
+function unflag(){
+  api('/api/audit/conversations/'+SID+'/flag',{method:'DELETE'}).then(({ok,d})=>{
+    toast(ok&&d.code===0?'已取消标记':'操作失败'); load(); });
+}
+load();
+</script>
+{% endblock %}

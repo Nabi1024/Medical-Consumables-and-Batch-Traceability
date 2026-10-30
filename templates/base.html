@@ -1,0 +1,104 @@
+{# =========================================================================
+   管理后台基础布局（SaaS 简约风）：顶部品牌栏 + 左侧导航 + 内容区
+   子模板通过 {% block content %} 填充；统一中文 UI、浅色卡片风。
+   ========================================================================= #}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}医用耗材追溯智能助手 · 管理后台{% endblock %}</title>
+  <style>
+    :root{
+      --bg:#f5f7fa; --panel:#ffffff; --primary:#2f6fed; --primary-d:#1f55c7;
+      --text:#1f2937; --muted:#6b7280; --border:#e5e7eb; --danger:#dc2626;
+      --ok:#16a34a; --warn:#d97706; --shadow:0 1px 3px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+         background:var(--bg);color:var(--text);font-size:14px}
+    .topbar{height:56px;background:var(--primary);color:#fff;display:flex;
+            align-items:center;padding:0 20px;position:fixed;top:0;left:0;right:0;z-index:10}
+    .topbar .brand{font-weight:600;font-size:16px}
+    .topbar .who{margin-left:auto;font-size:13px;opacity:.9}
+    .topbar a.logout{color:#fff;margin-left:16px;text-decoration:none;opacity:.9}
+    .topbar a.logout:hover{opacity:1}
+    .sidebar{position:fixed;top:56px;left:0;bottom:0;width:200px;background:var(--panel);
+             border-right:1px solid var(--border);padding:14px 0}
+    .sidebar a{display:block;padding:11px 20px;color:var(--text);text-decoration:none;
+               font-size:14px;border-left:3px solid transparent}
+    .sidebar a:hover{background:#eef3ff}
+    .sidebar a.active{background:#eef3ff;border-left-color:var(--primary);color:var(--primary-d);font-weight:600}
+    .main{margin-left:200px;margin-top:56px;padding:22px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+          box-shadow:var(--shadow);padding:18px;margin-bottom:18px}
+    .card h2{font-size:15px;margin-bottom:12px}
+    .btn{display:inline-block;padding:8px 14px;border-radius:8px;border:1px solid var(--border);
+         background:#fff;color:var(--text);cursor:pointer;font-size:13px;text-decoration:none}
+    .btn:hover{background:#f0f4ff}
+    .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .btn.primary:hover{background:var(--primary-d)}
+    .btn.danger{color:var(--danger);border-color:#f3c7c7}
+    .btn.danger:hover{background:#fdeaea}
+    .btn.sm{padding:5px 10px;font-size:12px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border)}
+    th{color:var(--muted);font-weight:600;background:#fafbfc}
+    tr:hover td{background:#f8fafc}
+    .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px}
+    .tag.ok{background:#e7f6ec;color:var(--ok)}
+    .tag.warn{background:#fdf0db;color:var(--warn)}
+    .tag.danger{background:#fdeaea;color:var(--danger)}
+    .tag.mut{background:#eef0f3;color:var(--muted)}
+    .stats{display:flex;gap:14px;flex-wrap:wrap}
+    .stat{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+          padding:16px 20px;min-width:140px;box-shadow:var(--shadow)}
+    .stat .n{font-size:26px;font-weight:700;color:var(--primary)}
+    .stat .l{color:var(--muted);margin-top:4px}
+    input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border);
+          border-radius:8px;font-size:13px;font-family:inherit;background:#fff}
+    label{display:block;margin:10px 0 5px;color:var(--muted);font-size:13px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;
+             align-items:center;justify-content:center;z-index:50}
+    .modal{background:#fff;border-radius:12px;padding:22px;width:520px;max-width:92vw;
+           max-height:86vh;overflow:auto}
+    .modal h3{margin-bottom:12px}
+    .toast{position:fixed;top:66px;right:18px;background:#333;color:#fff;padding:10px 14px;
+           border-radius:8px;font-size:13px;opacity:0;transition:.3s;z-index:99}
+    .toast.show{opacity:.95}
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand">🩺 医用耗材批次追溯智能助手</span>
+    <span class="who">管理员：{{ username }}</span>
+    <a class="logout" href="#" onclick="logout()">退出登录</a>
+  </div>
+  <div class="sidebar">
+    <a href="/admin" class="{% if active=='overview' %}active{% endif %}">概览</a>
+    <a href="/admin/kb" class="{% if active=='kb' %}active{% endif %}">知识库管理</a>
+    <a href="/admin/prompts" class="{% if active=='prompts' %}active{% endif %}">提示词模板</a>
+    <a href="/admin/audit" class="{% if active=='audit' %}active{% endif %}">对话审计与质控</a>
+    <a href="/admin/logs" class="{% if active=='logs' %}active{% endif %}">操作日志</a>
+    <a href="/" style="margin-top:18px;color:var(--primary)">← 返回问答端</a>
+  </div>
+  <div class="main">
+    {% block content %}{% endblock %}
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    // 通用：从 cookie 取 token，注入到 fetch 的 Authorization 头
+    function token(){ return document.cookie.split('; ').find(x=>x.startsWith('token='))?.split('=')[1]; }
+    function authHeaders(h={}){ return Object.assign({'Authorization':'Bearer '+token()}, h); }
+    function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+    function logout(){ document.cookie='token=; path=/; max-age=0'; location.href='/login'; }
+    function api(url, opt={}){
+      return fetch(url, Object.assign({headers:authHeaders()}, opt))
+        .then(r=>r.json().then(d=>({ok:r.ok, d})));
+    }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

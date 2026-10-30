@@ -1,0 +1,91 @@
+{# =========================================================================
+   提示词模板管理：列表 + 新建/编辑（textarea）+ 设为"生效中"。
+   修改即时生效：RAG 问答自动加载 is_active=1 的 system 模板。
+   ========================================================================= #}
+{% extends "base.html" %}
+{% block title %}提示词模板 · 管理后台{% endblock %}
+{% block content %}
+  <div class="card">
+    <h2>提示词模板列表</h2>
+    <table id="tplTable">
+      <thead><tr><th>名称</th><th>类型</th><th>状态</th><th>版本</th><th>更新时间</th><th>操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div style="margin-top:12px"><button class="btn primary" onclick="showEditor()">+ 新建模板</button></div>
+  </div>
+
+  <div class="modal-bg" id="modal">
+    <div class="modal">
+      <h3 id="editorTitle">编辑模板</h3>
+      <input type="hidden" id="tplId">
+      <label>模板名称</label>
+      <input id="tplName" placeholder="如：默认系统提示词">
+      <label>类型（system 为问答系统提示词）</label>
+      <input id="tplType" value="system">
+      <label>模板内容（支持 {context} 占位，由 RAG 注入检索片段）</label>
+      <textarea id="tplContent" rows="12" style="font-family:monospace"></textarea>
+      <div style="margin-top:14px;text-align:right">
+        <button class="btn" onclick="closeModal()">取消</button>
+        <button class="btn primary" onclick="saveTpl()">保存</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadTpl(){
+  api('/api/prompts').then(({ok,d})=>{
+    if(!ok){ toast(d.message||'加载失败'); return; }
+    const tb=document.querySelector('#tplTable tbody'); tb.innerHTML='';
+    (d.data||[]).forEach(t=>{
+      const st = t.is_active ? '<span class="tag ok">生效中</span>' : '<span class="tag mut">未生效</span>';
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${t.name}</td><td>${t.type}</td><td>${st}</td>
+        <td>v${t.version}</td><td class="muted">${t.updated_at}</td>
+        <td>
+          <button class="btn sm" onclick="showEditor('${t.id}')">编辑</button>
+          ${t.is_active?'':'<button class="btn sm primary" onclick="activate(\''+t.id+'\')">设为生效</button>'}
+        </td>`;
+      tb.appendChild(tr);
+    });
+  });
+}
+function showEditor(id){
+  document.getElementById('editorTitle').textContent = id? '编辑模板':'新建模板';
+  document.getElementById('tplId').value = id||'';
+  if(id){
+    api('/api/prompts/'+id).then(({ok,d})=>{
+      if(!ok){ toast(d.message||'加载失败'); return; }
+      document.getElementById('tplName').value=d.data.name;
+      document.getElementById('tplType').value=d.data.type;
+      document.getElementById('tplContent').value=d.data.content;
+    });
+  }else{
+    document.getElementById('tplName').value='';
+    document.getElementById('tplType').value='system';
+    document.getElementById('tplContent').value='';
+  }
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){ document.getElementById('modal').style.display='none'; }
+function saveTpl(){
+  const id=document.getElementById('tplId').value;
+  const body={name:document.getElementById('tplName').value,
+              content:document.getElementById('tplContent').value};
+  if(id){
+    api('/api/prompts/'+id,{method:'PUT',headers:authHeaders({'Content-Type':'application/json'}),
+        body:JSON.stringify(body)}).then(({ok,d})=>{ toast(ok&&d.code===0?'已保存':'保存失败'); closeModal(); loadTpl(); });
+  }else{
+    body.type=document.getElementById('tplType').value;
+    api('/api/prompts',{method:'POST',headers:authHeaders({'Content-Type':'application/json'}),
+        body:JSON.stringify(body)}).then(({ok,d})=>{ toast(ok&&d.code===0?'已创建':'创建失败'); closeModal(); loadTpl(); });
+  }
+}
+function activate(id){
+  api('/api/prompts/'+id+'/activate',{method:'POST'}).then(({ok,d})=>{
+    toast(ok&&d.code===0?'已设为生效中，问答即时更新':'操作失败'); loadTpl(); });
+}
+loadTpl();
+</script>
+{% endblock %}

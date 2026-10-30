@@ -1,0 +1,48 @@
+{# =========================================================================
+   操作日志：管理员写操作审计留痕，按操作人/动作筛选。
+   ========================================================================= #}
+{% extends "base.html" %}
+{% block title %}操作日志 · 管理后台{% endblock %}
+{% block content %}
+  <div class="card">
+    <h2>筛选</h2>
+    <div class="row">
+      <div style="width:160px"><input id="f_user" placeholder="操作人"></div>
+      <div style="width:180px"><input id="f_action" placeholder="动作(如 kb_upload)"></div>
+      <button class="btn primary" onclick="load(1)">查询</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>操作日志</h2>
+    <table id="logTable">
+      <thead><tr><th>时间</th><th>操作人</th><th>角色</th><th>动作</th><th>对象</th><th>详情</th><th>IP</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function load(page=1){
+  const p=new URLSearchParams(); p.set('page',page); p.set('size',50);
+  const u=document.getElementById('f_user').value.trim();
+  const a=document.getElementById('f_action').value.trim();
+  if(u)p.set('operator',u); if(a)p.set('action',a);
+  api('/api/logs?'+p.toString()).then(({ok,d})=>{
+    if(!ok){ toast(d.message||'加载失败'); return; }
+    const tb=document.querySelector('#logTable tbody'); tb.innerHTML='';
+    (d.data.items||[]).forEach(it=>{
+      let detail=''; try{ detail=JSON.stringify(JSON.parse(it.detail)); }catch(e){ detail=it.detail||''; }
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td class="muted">${it.created_at}</td><td>${it.username}</td>
+        <td><span class="tag mut">${it.role}</span></td><td>${it.action}</td>
+        <td class="muted">${it.object_type}:${it.object_id?it.object_id.slice(0,8):''}</td>
+        <td class="muted" style="max-width:320px;white-space:pre-wrap">${detail}</td>
+        <td class="muted">${it.ip}</td>`;
+      tb.appendChild(tr);
+    });
+  });
+}
+load(1);
+</script>
+{% endblock %}

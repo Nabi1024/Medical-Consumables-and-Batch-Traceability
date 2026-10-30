@@ -1,0 +1,97 @@
+{# =========================================================================
+   知识库管理：上传 PDF/MD（选分类）→ 自动切片向量化；文档列表（状态/分类/切片数）
+   支持：预览切片、删除、重建索引。数据由 JS 调用 /api/kb/* 渲染。
+   ========================================================================= #}
+{% extends "base.html" %}
+{% block title %}知识库管理 · 管理后台{% endblock %}
+{% block content %}
+  <div class="card">
+    <h2>上传制度文件（PDF / Markdown）</h2>
+    <div class="row">
+      <div style="flex:1;min-width:240px">
+        <input type="file" id="file" accept=".pdf,.md,.txt,.markdown">
+      </div>
+      <div style="width:200px">
+        <select id="category">
+          {% for k,v in categories.items() %}<option value="{{k}}">{{v}}</option>{% endfor %}
+        </select>
+      </div>
+      <button class="btn primary" onclick="upload()">上传并向量化</button>
+    </div>
+    <p class="muted" style="margin-top:10px">系统将自动按 500 字分段、批量向量化入库；PDF 解析依赖 PyMuPDF。</p>
+  </div>
+
+  <div class="card">
+    <h2>文档列表</h2>
+    <table id="docTable">
+      <thead><tr><th>文件名</th><th>分类</th><th>类型</th><th>切片数</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- 切片预览弹窗 -->
+  <div class="modal-bg" id="modal">
+    <div class="modal">
+      <h3>切片预览</h3>
+      <div id="chunks" style="max-height:50vh;overflow:auto"></div>
+      <div style="margin-top:14px;text-align:right"><button class="btn" onclick="closeModal()">关闭</button></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CAT = {{ categories | tojson }};
+function loadDocs(page=1){
+  api('/api/kb/documents?page='+page+'&size=50').then(({ok,d})=>{
+    if(!ok){ toast(d.message||'加载失败'); return; }
+    const tb=document.querySelector('#docTable tbody'); tb.innerHTML='';
+    (d.data.items||[]).forEach(it=>{
+      const tr=document.createElement('tr');
+      const st = it.status==='indexed'
+        ? '<span class="tag ok">已入库</span>' : '<span class="tag warn">'+it.status+'</span>';
+      tr.innerHTML=`<td>${it.title}</td><td>${CAT[it.category]||it.category}</td>
+        <td>${it.file_type}</td><td>${it.chunk_count}</td><td>${st}</td>
+        <td class="muted">${it.created_at}</td>
+        <td>
+          <button class="btn sm" onclick="preview('${it.id}')">预览</button>
+          <button class="btn sm" onclick="reindex('${it.id}')">重建</button>
+          <button class="btn sm danger" onclick="del('${it.id}')">删除</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+  });
+}
+function upload(){
+  const f=document.getElementById('file').files[0];
+  if(!f){ toast('请选择文件'); return; }
+  const fd=new FormData();
+  fd.append('file', f);
+  fd.append('category', document.getElementById('category').value);
+  fetch('/api/kb/documents/upload',{method:'POST',headers:authHeaders(),body:fd})
+    .then(r=>r.json().then(d=>({ok:r.ok,d})))
+    .then(({ok,d})=>{ if(ok&&d.code===0){ toast('上传成功'); loadDocs(); } else toast((d&&d.message)||'上传失败'); });
+}
+function preview(id){
+  api('/api/kb/documents/'+id+'/chunks?limit=10').then(({ok,d})=>{
+    if(!ok){ toast(d.message||'失败'); return; }
+    const c=document.getElementById('chunks');
+    c.innerHTML=(d.data||[]).map(x=>`<div style="border:1px solid #eee;border-radius:8px;padding:10px;margin-bottom:8px">
+      <b class="muted">#${x.chunk_index}</b><div style="margin-top:4px;white-space:pre-wrap">${x.content}</div></div>`).join('');
+    document.getElementById('modal').style.display='flex';
+  });
+}
+function closeModal(){ document.getElementById('modal').style.display='none'; }
+function reindex(id){
+  if(!confirm('确认重新向量化该文档？')) return;
+  api('/api/kb/documents/'+id+'/reindex',{method:'POST'}).then(({ok,d})=>{
+    toast(ok&&d.code===0?'重建完成':'操作失败'); loadDocs(); });
+}
+function del(id){
+  if(!confirm('确认删除该文档及其全部切片向量？')) return;
+  api('/api/kb/documents/'+id,{method:'DELETE'}).then(({ok,d})=>{
+    toast(ok&&d.code===0?'已删除':'删除失败'); loadDocs(); });
+}
+loadDocs();
+</script>
+{% endblock %}

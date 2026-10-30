@@ -1,0 +1,58 @@
+{# =========================================================================
+   登录页（SaaS 居中卡片）：账号密码 → POST /api/auth/login → 存 token 到 cookie
+   ========================================================================= #}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 · 医用耗材追溯智能助手</title>
+  <style>
+    *{box-sizing:border-box}
+    body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+         background:#eef2f8;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+    .box{background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.08);
+         width:360px;padding:30px 28px}
+    .box h1{font-size:18px;margin-bottom:4px}
+    .box .sub{color:#6b7280;font-size:13px;margin-bottom:20px}
+    label{display:block;font-size:13px;color:#374151;margin:12px 0 5px}
+    input{width:100%;padding:10px 12px;border:1px solid #d8dee9;border-radius:9px;font-size:14px}
+    button{width:100%;margin-top:20px;padding:11px;border:0;border-radius:9px;
+           background:#2f6fed;color:#fff;font-size:15px;cursor:pointer}
+    button:hover{background:#1f55c7}
+    .err{color:#dc2626;font-size:13px;margin-top:12px;min-height:18px}
+    .hint{margin-top:16px;font-size:12px;color:#9ca3af;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🩺 医用耗材批次追溯智能助手</h1>
+    <div class="sub">管理后台登录（操作员 / 系统管理员）</div>
+    <label>用户名</label>
+    <input id="u" placeholder="如 admin 或 operator">
+    <label>密码</label>
+    <input id="p" type="password" placeholder="请输入密码">
+    <button onclick="login()">登录</button>
+    <div class="err" id="err"></div>
+    <div class="hint">默认账号：admin / Admin@123（管理员）　operator / operator123（操作员）</div>
+  </div>
+  <script>
+    function login(){
+      const u=document.getElementById('u').value.trim();
+      const p=document.getElementById('p').value;
+      document.getElementById('err').textContent='';
+      fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username:u,password:p})})
+      .then(r=>r.json().then(d=>({ok:r.ok,d})))
+      .then(({ok,d})=>{
+        if(!ok || d.code!==0){ document.getElementById('err').textContent=(d&&d.message)||'登录失败'; return; }
+        // 存 token（cookie，8h 过期，管理页面守卫依赖它）
+        document.cookie='token='+d.data.access_token+'; path=/; max-age=28800';
+        // 管理员进后台，操作员回问答端
+        location.href = d.data.role==='admin' ? '/admin' : '/';
+      }).catch(e=>document.getElementById('err').textContent='网络错误');
+    }
+    document.getElementById('p').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+  </script>
+</body>
+</html>
