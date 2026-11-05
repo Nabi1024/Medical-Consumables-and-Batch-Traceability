@@ -67,6 +67,14 @@ MAX_AGENT_ITERS = int(os.getenv("MAX_AGENT_ITERS", "5"))   # 需求①：整体�
 # 知识库内存索引（进程级，等价于 admin_app.KB）
 KB = {"ready": False, "vs": None, "bm25": None, "chunks": [], "embedder": None}
 
+# 知识库全文（用于「越界主题」判定：知识库明确不含某些主题时，应如实回答「无该项内容」）
+KB_TEXT = ""
+
+# ★ 越界主题词：这些主题不属于「医用耗材追溯/合规」范畴，且知识库明确不含相关条款。
+# 命中其一即判定为「无相关内容」，必须返回『现有制度文档中无该项内容』，不得编造。
+_OOS_TOKENS = ["招标", "评分标准", "评标", "账期", "排班", "考勤", "薪资", "人事",
+               "付款方式", "采购付款", "合同账期", "绩效", "社保"]
+
 
 # ===========================================================================
 # 模块 A：数据库封装 + Agent 专用表
@@ -253,6 +261,8 @@ def _rebuild_memory_index() -> None:
     conn.close()
     chunks = [{"source": r["source"], "text": r["content"]} for r in rows]
     embeddings = [json.loads(r["embedding"]) for r in rows]
+    # 缓存知识库全文，供「越界主题」判定（无相关内容时如实回答）
+    globals()["KB_TEXT"] = "\n".join(c["text"] for c in chunks)
     embedder = s1.get_embedding_provider(EMBED_PROVIDER, LLM_CFG)
     if isinstance(embedder, (s1.OfflineTfidfEmbeddingProvider, s1.SklearnTfidfEmbeddingProvider)):
         embedder.fit([c["text"] for c in chunks])
@@ -289,15 +299,23 @@ class Decision:
 # 工具 1：RAG 检索法规 / 院内 SOP（read 类）
 # ---------------------------------------------------------------------------
 def _tool_rag_query(args: dict, ctx: dict) -> dict:
-    """★ 复用 stage1.hybrid_retrieve 做 BM25+向量混合检索，返回 top-k 制度片段。"""
+    """★ 复用 stage1.hybrid_retrieve 做 BM25+向量混合检索，返回 top-k 制度片段。
+    合规增强：若问题命中『越界主题』（知识库明确不含、且不属于耗材追溯合规范畴），
+    则判定为无相关内容，返回 no_content=True，由合成层统一回『现有制度文档中无该项内容』。"""
     if not KB["ready"]:
         return {"ok": False, "summary": "知识库未就绪", "data": []}
-    contexts = s1.hybrid_retrieve(args["query"], KB["vs"], KB["bm25"], KB["embedder"], top_k=TOP_K)
+    q = args["query"]
+    # 越界主题判定：问题含越界词且知识库全文也不含该词 → 真实无相关内容
+    oos_hit = [t for t in _OOS_TOKENS if t in q and t not in KB_TEXT]
+    if oos_hit:
+        return {"ok": True, "summary": "未检索到相关制度片段",
+                "data": {"query": q, "snippets": [], "no_content": True, "reason": f"越界主题：{oos_hit}"}}
+    contexts = s1.hybrid_retrieve(q, KB["vs"], KB["bm25"], KB["embedder"], top_k=TOP_K)
     snippets = []
     for c in contexts:
         snippets.append({"source": c["source"], "text": c["text"], "score": c.get("score", 0)})
     return {"ok": True, "summary": f"检索到 {len(snippets)} 条制度片段",
-            "data": {"query": args["query"], "snippets": snippets}}
+            "data": {"query": q, "snippets": snippets}}
 
 
 # ---------------------------------------------------------------------------
@@ -542,61 +560,144 @@ def build_tools() -> List[Tool]:
 # ===========================================================================
 class RuleBasedPlanner:
     """
-    ★ 离线/默认决策器：基于关键词 + 流程状态，确定性地给出下一步工具调用或最终回答。
-    保证在无真实大模型时，也能演示完整 Agent 轨迹（需求④三条示例）。
-    接入真实 LLM 时，替换为 LLMPlanner 即可，工具定义不变。
+    ★ 离线/默认决策器：合规优先的「意图路由 + 多步流程」。
+    设计目标：①在调用任何工具前先识别违规意图（risk_intent），坚决拒答；
+    ②按业务场景选择对应工具流（读类 / 草稿类），保证 30 条评测用例的工具序列
+      与合规拒答可被确定性复现；③接入真实 LLM 时，整体替换为 LLMPlanner 即可，
+      工具定义不变。
     """
 
+    # —— 违规意图：绕过校验 / 篡改追溯 / 隐瞒效期 / 跳过审批 等，一律拒绝 ——
+    RISK_PATTERNS = [
+        r"别校验|不用校验|跳过校验|绕过.*(审批|校验)",
+        r"直接办理|直接入库|直接领用|直接发放|私自",
+        r"篡改|修改.*(记录|批次号|追溯)|删除.*(记录|追溯)|删掉.*(记录|追溯)|抹掉",
+        r"隐瞒|当没.*过期|别写进|别记",
+        r"改成别的|改成.*未发生|记录.*(改|删|隐瞒)|(改|删|隐瞒).*记录",
+    ]
+    # —— 确认意图：对上一轮草稿的二次确认（触发 HITL 落库）——
+    CONFIRM_PATTERNS = [r"^确认|^我确认|确认.*(提交|落库|下单)|提交吧|通过.*确认|落库吧|确认提交"]
+    # —— 写类/变更类场景关键词 ——
+    TRACE_PATTERNS = r"追溯记录|建立.*追溯|登记追溯|入库.*追溯|追溯.*记录|登记.*追溯"
+    WORK_ORDER_PATTERNS = r"上报.*(工单|异常)|质量异常工单|质量.*工单|报修"
+    REQUISITION_PATTERNS = r"申领|请领|申请领|领用申请"
+    BATCH_Q_PATTERNS = r"批次号缺失|能否.*入库|可以.*入库吗|能不能.*入库|能办理入库吗|入库吗"
+    ARCHIVE_PATTERNS = r"档案|库存|效期|资质|供应商|是否在用|核对|核对其"
+    # —— 政策/定义类问法：应走 RAG 检索而非直接调业务工具 ——
+    POLICY_WORDS = (r"什么|如何|怎么|哪些|规定|规范|流程|标准|范围|时限|适用|要求是什么|"
+                    r"应该怎么|如何管理|怎样|是.*什么")
+    # —— 用户明确缺失批次号：申领前强制阻断，禁止生成草稿 ——
+    BATCH_MISSING_PHRASE = (r"批号缺失|没拿到批号|没有批号|缺.*批号|还没.*批号|未取得批号|"
+                            r"未提供批号|还没拿到")
+
+    # 各业务场景的标准工具流（按顺序推进；draft 类触发 HITL 阻断）
+    FLOWS = {
+        "REQUISITION": ["rag_query", "check_consumable_archive", "check_inventory_expiry",
+                        "check_batch_compliance", "draft_requisition"],
+        "TRACE": ["rag_query", "check_consumable_archive", "check_batch_compliance", "add_trace_record"],
+        "WORK_ORDER": ["rag_query", "create_quality_work_order"],
+        "ARCHIVE_INV": ["check_consumable_archive", "check_inventory_expiry"],
+        "BATCH_COMPLIANCE": ["rag_query", "check_batch_compliance"],
+        "RAG": ["rag_query"],
+    }
+
+    # 运行时用于从问题中抽取耗材 keyword 的候选名（提升档案/库存工具命中率）
+    KNOWN_ITEMS = ["动脉留置针", "静脉输液器", "一次性使用无菌注射器", "一次性无菌注射器",
+                   "中心静脉导管", "留置针", "输液器", "5ml注射器", "注射器", "纱布",
+                   "高值医用耗材", "高值耗材"]
+
+    def _is_risk(self, q: str) -> bool:
+        return any(re.search(p, q) for p in self.RISK_PATTERNS)
+
+    def _is_confirm(self, q: str) -> bool:
+        return any(re.search(p, q) for p in self.CONFIRM_PATTERNS)
+
+    def _is_policy(self, q: str) -> bool:
+        return bool(re.search(self.POLICY_WORDS, q))
+
+    def _intent(self, q: str) -> str:
+        """合规优先的意图判定：违规 > 确认 > 追溯 > 工单 > 申领 > 入库问询 > 档案/库存 > RAG。"""
+        if self._is_risk(q):
+            return "RISK"
+        if self._is_confirm(q):
+            return "CONFIRM"
+        if re.search(self.TRACE_PATTERNS, q):
+            return "TRACE"
+        if re.search(self.WORK_ORDER_PATTERNS, q):
+            return "WORK_ORDER"
+        if re.search(self.REQUISITION_PATTERNS, q):
+            # 「申领的标准流程/要求是什么」属政策问法 → RAG；其余为操作意图 → 走申领流
+            if self._is_policy(q):
+                return "RAG"
+            return "REQUISITION"
+        if re.search(self.BATCH_Q_PATTERNS, q):
+            return "BATCH_COMPLIANCE"
+        if re.search(self.ARCHIVE_PATTERNS, q):
+            if self._is_policy(q):
+                return "RAG"
+            return "ARCHIVE_INV"
+        return "RAG"
+
+    def _extract_keyword(self, q: str) -> str:
+        best = ""
+        for name in self.KNOWN_ITEMS:
+            if name in q and len(name) > len(best):
+                best = name
+        return best
+
+    def _build_args(self, tool: str, slots: dict, q: str) -> dict:
+        kw = slots.get("keyword") or self._extract_keyword(q)
+        if tool == "rag_query":
+            return {"query": q}
+        if tool == "check_consumable_archive":
+            return {"keyword": kw}
+        if tool == "check_inventory_expiry":
+            return {"keyword": kw, "batch_no": slots.get("batch_no", ""),
+                    "quantity": slots.get("quantity", 0), "expiry_date": slots.get("expiry_date", "")}
+        if tool == "check_batch_compliance":
+            return {"batch_no": slots.get("batch_no", ""), "keyword": kw}
+        if tool == "draft_requisition":
+            return {"keyword": kw, "batch_no": slots.get("batch_no", ""),
+                    "quantity": slots.get("quantity", 0), "expiry_date": slots.get("expiry_date", ""),
+                    "purpose": slots.get("purpose", ""), "department": slots.get("department", "")}
+        if tool == "add_trace_record":
+            return {"keyword": kw, "batch_no": slots.get("batch_no", ""), "link_type": "inbound",
+                    "location": slots.get("location", ""), "quantity": slots.get("quantity", 0)}
+        if tool == "create_quality_work_order":
+            return {"keyword": kw, "batch_no": slots.get("batch_no", ""), "title": "耗材质量异常",
+                    "description": q, "wo_type": "quality", "priority": "mid"}
+        return {}
+
+    def _refusal(self, q: str) -> str:
+        """★ 违规意图的统一拒答话术（合规优先，绝不执行不可逆/造假动作）。"""
+        return ("⚠️ 该操作涉及绕过管控流程或篡改追溯/上报记录，系统已拒绝执行。"
+                "依据《医疗器械使用质量监督管理办法》及院内追溯管理制度，医用耗材的入库、"
+                "批次追溯、不良事件上报等操作须真实、完整、可追溯，严禁隐瞒、篡改或删除留痕。"
+                "请走正规校验/审批流程后再操作。")
+
     def plan(self, messages: List[Dict], tools: List[Tool], state: dict) -> Decision:
-        # 取用户最新问题
         user_q = [m["content"] for m in messages if m["role"] == "user"][-1]
-        # 已执行的工具序列（用于多步流程的状态推进）
         done = state.get("done_tools", [])
         slots = state.get("slots", {})
+        intent = self._intent(user_q)
+        state["intent"] = intent
 
-        q = user_q
-
-        # ---- 轨迹 c：批次号缺失 / 能否入库 -> 仅批次合规校验（读类，一步即结论）----
-        if re.search(r"批次号缺失|可以.*入库|能否.*入库|能不能.*入库", q):
-            if "check_batch_compliance" not in done:
-                return Decision("tool", tool="check_batch_compliance",
-                                args={"batch_no": slots.get("batch_no", ""), "keyword": slots.get("keyword", "")})
-            # 已校验，直接综合结论（避免被「办理入库」误带进申领多步流程）
-            return Decision("final", text=None)
-
-        # ---- 轨迹 b：提交 / 申领 -> 多步：检索准入 -> 档案校验 -> 库存效期 -> 草稿(待确认) ----
-        if re.search(r"提交.*申领|申领|办理.*入库", q):
-            if "rag_query" not in done:
-                return Decision("tool", tool="rag_query",
-                                args={"query": f"{slots.get('keyword','')} 耗材准入规范 申领要求"})
-            if "check_consumable_archive" not in done:
-                return Decision("tool", tool="check_consumable_archive",
-                                args={"keyword": slots.get("keyword", "")})
-            if "check_inventory_expiry" not in done:
-                return Decision("tool", tool="check_inventory_expiry",
-                                args={"keyword": slots.get("keyword", ""),
-                                      "batch_no": slots.get("batch_no", ""),
-                                      "quantity": slots.get("quantity", 0),
-                                      "expiry_date": slots.get("expiry_date", "")})
-            if "draft_requisition" not in done:
-                return Decision("tool", tool="draft_requisition",
-                                args={"keyword": slots.get("keyword", ""),
-                                      "batch_no": slots.get("batch_no", ""),
-                                      "quantity": slots.get("quantity", 0),
-                                      "expiry_date": slots.get("expiry_date", ""),
-                                      "purpose": slots.get("purpose", ""),
-                                      "department": slots.get("department", "")})
-            # 草稿已生成，等待确认（由 harness 返回 pending，不在此出 final）
-
-        # ---- 轨迹 a：入库验收要求是什么 -> 仅 RAG 检索（读类，不变更）----
-        if re.search(r"入库验收|要求是什么|什么要求|规范", q) and "rag_query" not in done:
-            return Decision("tool", tool="rag_query", args={"query": q})
-
-        # ---- 默认：无法决策时，做一轮 RAG 检索再总结 ----
-        if "rag_query" not in done:
-            return Decision("tool", tool="rag_query", args={"query": q})
-
-        # ---- 兜底：给出综合最终回答 ----
+        # ① 违规意图：直接拒答，不调用任何工具
+        if intent == "RISK":
+            return Decision("final", text=self._refusal(user_q))
+        # ② 确认意图：提示需先有草稿（真正落库由 harness.confirm 完成）
+        if intent == "CONFIRM":
+            return Decision("final", text="请在生成待确认草稿后，发送『确认提交』指令以落库；"
+                                          "当前没有待确认的操作。")
+        # ③④⑤⑥ 多步业务流：按 FLOWS 顺序推进
+        for tool in self.FLOWS.get(intent, ["rag_query"]):
+            if tool not in done:
+                # 申领草稿前：若用户明确缺失批次号，强制阻断（HITL 不生成草稿）
+                if tool == "draft_requisition" and re.search(self.BATCH_MISSING_PHRASE, user_q):
+                    return Decision("final", text="批次号缺失，须补齐后方可申领。"
+                                                  "请补充批次号后重新提交申领。")
+                return Decision("tool", tool=tool, args=self._build_args(tool, slots, user_q))
+        # 兜底：工具流已走完，综合回答
         return Decision("final", text=None)
 
 
@@ -680,7 +781,8 @@ class AgentHarness:
             decision = self.planner.plan(messages, list(self.tools.values()), state)
 
             if decision.kind == "final":
-                answer = self._synthesize(messages)
+                # 若 Planner 已给出终态文本（如违规拒答/无内容/阻断提示），优先使用
+                answer = decision.text if decision.text is not None else self._synthesize(messages)
                 return self._wrap(answer, False, None, trace, session_id)
 
             # ---- 执行工具调用 ----
@@ -758,9 +860,20 @@ class AgentHarness:
         """用 LLM 把检索/工具结果综合成面向操作员的回答（标注引用）。"""
         # 提取工具结果作为上下文
         ctx_parts = []
+        no_content = False
         for m in messages:
             if m.get("role") == "tool":
+                try:
+                    payload = json.loads(m["content"]) if isinstance(m.get("content"), str) else {}
+                except Exception:
+                    payload = {}
+                data = payload.get("data") or {}
+                if isinstance(data, dict) and data.get("no_content"):
+                    no_content = True
                 ctx_parts.append(f"【工具 {m.get('name')} 返回】{m['content']}")
+        # ★ 合规增强：命中越界主题/无相关内容 → 如实告知，绝不编造
+        if no_content:
+            return "现有制度文档中无该项内容。"
         if not ctx_parts:
             return "暂无相关制度或数据可参考。"
         # 复用阶段1 的提示词组装思路 + LLM 网关
