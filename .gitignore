@@ -1,0 +1,14 @@
+# ===== 运行时生成 =====
+*.db
+*.sqlite
+__pycache__/
+*.pyc
+.venv/
+envs/
+# ===== 项目内部数据（不要入库）=====
+.workbuddy/
+# ===== 运行期上传目录 =====
+uploads/
+# ===== 编辑器 / 系统 =====
+.DS_Store
+Thumbs.db
