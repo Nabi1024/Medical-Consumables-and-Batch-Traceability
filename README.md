@@ -29,33 +29,29 @@
 ## 目录结构
 
 ```
-stage1_prototype.py   阶段1 RAG 原型：文档切片 / TF-IDF 向量 / FAISS(可降级) / BM25 / 混合检索 / LLM 网关
-chat_app.py           操作员问答后端（FastAPI + SQLite + SSE 流式 + 最近6轮上下文）
-admin_app.py          管理员后台（JWT + RBAC + 知识库管理 + 提示词模板 + 对话审计质控）
-agent_core.py         业务 Agent 编排核心（Harness 循环 / 7 个工具 / HITL 阻断 / 执行日志）
-demo_agent.py         离线演示三条典型轨迹（仅检索 / 申领落单HITL / 批次合规校验）
-eval_agent.py         离线评测器（基于 qa_evaluation_cases.json，30 条用例自动打分）
-data_models.py        领域数据模型与字段级校验（Consumable / Requisition / WorkOrder / TraceRecord 等）
-report_generator.py   追溯/合规报告生成器（结构化 dict + Markdown 渲染）
-exporter.py           业务数据导出器（JSON / CSV）
-cli.py                统一命令行入口（demo / eval / init / index / report / export / serve / config）
-config.py             配置管理（环境变量覆盖、离线/在线判断、安全默认值）
-qa_evaluation_cases.json  30 条评测用例（rag_query / agent_tool_call / risk_intent / multi_turn_context）
+src/                     ★ MVP 源码（详见 src/README.md）
+├── 工程架构      config.py / data_models.py / report_generator.py / exporter.py / cli.py / demo_agent.py / eval_agent.py
+├── Agent框架     agent_core.py（Harness/规划器/7工具/HITL/审计）/ stage1_prototype.py（RAG+LLM底座）
+├── 知识库        docs/（01~08 制度与工程文档，RAG 摄取源）
+├── 问答助手归档  chat_app.py（操作员问答+会话归档）/ admin_app.py（管理员后台）
+├── 测试          test_models_offline.py / test_report_offline.py / test_chat_offline.py / test_admin_offline.py
+└── qa_evaluation_cases.json  30 条评测用例
 docs/                 制度文档与工程文档（监管法规 / 院内SOP / 批次追溯 / 效期管理 / 不良事件 / 架构 / API / 评测报告）
-templates/ static/    Web 前端（Jinja2 服务端渲染 + 原生 JS 单页）
-test_*.py             离线单元测试与集成测试（零依赖可跑）
+templates/ static/    Web 前端（Jinja2 服务端渲染 + 原生 JS 单页，已随 src/ 迁移）
+test_*.py             离线单元测试与集成测试（零依赖可跑，位于 src/）
 ```
+
+> 源码已统一迁入 `src/` 目录：运行命令需加 `src/` 前缀，例如 `python src/cli.py demo`。
 
 ## 快速运行（离线 / 零三方依赖）
 
 ```bash
-python demo_agent.py            # 离线演示 Agent 三条轨迹（默认 Mock LLM）
-python eval_agent.py            # 运行 30 条评测用例并打出分数
-python cli.py init              # 初始化数据库与知识库索引
-python cli.py report            # 生成追溯/合规报告（Markdown）
-python cli.py export json out.json   # 导出业务数据为 JSON
-python cli.py export csv  out.csv    # 导出追溯流水宽表 CSV
-python stage1_prototype.py --selftest   # RAG 自检
+python src/cli.py init                       # 初始化数据库与知识库索引
+python src/cli.py demo                       # 离线演示 Agent 三条轨迹（默认 Mock LLM）
+python src/cli.py eval                       # 运行 30 条评测用例并打出分数
+python src/cli.py report                     # 生成追溯/合规报告（Markdown）
+python src/cli.py export json out.json       # 导出业务数据为 JSON
+python src/cli.py export csv  out.csv        # 导出追溯流水宽表 CSV
 ```
 
 ## 命令行总览（cli.py）
@@ -81,7 +77,7 @@ export LLM_MODEL=xxx
 python -c "import agent_core; agent_core.make_harness(use_llm_planner=True)"   # 切换 LLMPlanner
 ```
 
-Web 服务（需联网安装）：`pip install fastapi uvicorn jinja2 python-multipart`，然后 `python admin_app.py`。
+Web 服务（需联网安装）：`pip install fastapi uvicorn jinja2 python-multipart`，然后 `python src/cli.py serve`（或 `python src/admin_app.py`）。
 
 ## 评测与评分
 
@@ -128,7 +124,7 @@ risk_intent 5/5、multi_turn_context 5/5）。真实 LLM 接入后，回答的�
 
 - 离线演示/评测/报告：**无需任何第三方包**，标准 Python 3.8+ 即可。
 - Web 服务：`pip install -r requirements.txt`（fastapi / uvicorn / jinja2 / python-multipart），
-  然后 `python cli.py serve` 或 `python admin_app.py`。
+  然后 `python src/cli.py serve`（或 `python src/admin_app.py`）。
 - 嵌入与向量：默认纯 Python 离线 TF-IDF + 暴力余弦；可选 `pip install scikit-learn` 提升检索质量，
   FAISS 亦可按需接入。
 
