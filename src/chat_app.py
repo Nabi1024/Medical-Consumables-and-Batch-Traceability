@@ -133,12 +133,24 @@ def db_conn() -> sqlite3.Connection:
 # 知识库摄取与索引构建（阶段1 模块复用 + 持久化到 SQLite）
 # ===========================================================================
 def ingest_kb_if_needed() -> None:
-    """若 kb_chunks 为空则从 DOCS_DIR 摄取并写入 SQLite；随后在内存构建 FAISS+BM25。"""
+    """若 kb_chunks 为空则从 DOCS_DIR 摄取并写入 SQLite；随后在内存构建 FAISS+BM25。
+
+    故障容错（F-06 优雅降级）：docs 目录缺失/为空时不应让服务崩溃，
+    而是以 kb_ready=false 启动，管理员后续可在后台上传文档补救。
+    """
     conn = db_conn()
     cnt = conn.execute("SELECT COUNT(*) AS c FROM kb_chunks").fetchone()["c"]
     conn.close()
     if cnt == 0:
-        _ingest_and_store()
+        try:
+            _ingest_and_store()
+        except FileNotFoundError as e:
+            # 知识库文档目录缺失：跳过摄取，保持 KB 未就绪状态启动
+            print(f"[WARN] 知识库文档缺失，以 kb_ready=false 降级启动：{e}")
+            return
+        except Exception as e:
+            print(f"[WARN] 知识库摄取失败，以 kb_ready=false 降级启动：{type(e).__name__}: {e}")
+            return
     _build_in_memory_index()
 
 
@@ -465,4 +477,5 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # 部署环境通过 PORT 环境变量注入端口（如 WorkBuddy 发布沙箱）；本地默认 8000
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8000")))

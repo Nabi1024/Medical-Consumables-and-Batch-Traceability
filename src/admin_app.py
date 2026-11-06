@@ -1099,6 +1099,18 @@ async def api_audit_search(operator: Optional[str] = None, start: Optional[str] 
             "data": audit_search(operator, start, end, keyword, risk, page, size)}
 
 
+# ★ 注意：export 为固定字面量路由，必须注册在 {session_id} 通配路由之前，
+#   否则 "export" 会被 {session_id} 捕获导致 404（FastAPI 按定义顺序匹配）。
+@app.get("/api/audit/conversations/export")
+async def api_audit_export(operator: Optional[str] = None, start: Optional[str] = None,
+                           end: Optional[str] = None, keyword: Optional[str] = None,
+                           risk: Optional[str] = None,
+                           _: Dict = Depends(require_admin)):
+    csv_text = audit_export_csv(operator, start, end, keyword, risk)
+    headers = {"Content-Disposition": "attachment; filename=audit_export.csv"}
+    return Response(content="\ufeff" + csv_text, media_type="text/csv", headers=headers)
+
+
 @app.get("/api/audit/conversations/{session_id}")
 async def api_audit_detail(session_id: str, _: Dict = Depends(require_admin)):
     try:
@@ -1129,16 +1141,6 @@ async def api_audit_unflag(session_id: str, payload: Dict = Depends(require_admi
     write_op_log(payload["sub"], _uname(payload), "admin", "audit_unflag",
                  "conversation", session_id, {}, _ip(request))
     return {"code": 0, "message": "ok"}
-
-
-@app.get("/api/audit/conversations/export")
-async def api_audit_export(operator: Optional[str] = None, start: Optional[str] = None,
-                           end: Optional[str] = None, keyword: Optional[str] = None,
-                           risk: Optional[str] = None,
-                           _: Dict = Depends(require_admin)):
-    csv_text = audit_export_csv(operator, start, end, keyword, risk)
-    headers = {"Content-Disposition": "attachment; filename=audit_export.csv"}
-    return Response(content="\ufeff" + csv_text, media_type="text/csv", headers=headers)
 
 
 # ===========================================================================
