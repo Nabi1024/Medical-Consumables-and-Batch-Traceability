@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "medical-consumables-batch-traceability"
+version = "1.2.0"
+description = "医用耗材批次追溯智能助手：RAG 问答 + 业务 Agent 编排 + HITL 合规管控"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Nabi1024" }]
+keywords = ["medical", "consumables", "traceability", "rag", "agent", "compliance"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Healthcare Industry",
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "jinja2",
+    "python-multipart",
+]
+
+[project.optional-dependencies]
+ml = ["scikit-learn", "faiss-cpu"]
+dev = ["pytest"]
+
+[project.scripts]
+mcb-agent = "cli:main"
+
+[tool.setuptools]
+py-modules = [
+    "stage1_prototype",
+    "agent_core",
+    "chat_app",
+    "admin_app",
+    "demo_agent",
+    "eval_agent",
+    "data_models",
+    "report_generator",
+    "exporter",
+    "cli",
+    "config",
+]

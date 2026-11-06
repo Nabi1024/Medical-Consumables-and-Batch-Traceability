@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies (best effort)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || echo "Web deps unavailable; offline tests are zero-dependency"
+
+      - name: Run offline tests and evaluation
+        run: |
+          python test_models_offline.py
+          python test_report_offline.py
+          python test_chat_offline.py
+          python test_admin_offline.py
+          python cli.py eval
