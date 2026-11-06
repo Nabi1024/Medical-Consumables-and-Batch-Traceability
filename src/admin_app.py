@@ -223,16 +223,21 @@ def require_admin(payload: Dict = Depends(get_current_user)) -> Dict:
 
 
 def require_page_admin(request: Request) -> Dict:
-    """页面级守卫：未登录/非 admin 直接 302 跳转到 /login。"""
+    """页面级守卫：未登录/非 admin 通过 302+Location 跳转到 /login。
+
+    说明：新版 Starlette 不允许 raise RedirectResponse（Response 不能作为异常抛出），
+    因此这里改为 raise HTTPException(302, Location=/login)，浏览器收到 302 会正常跳转，
+    且 raise 语义保证未授权时立即中断页面处理，鉴权不会被绕过。
+    """
     token = request.cookies.get("token")
     if not token:
-        raise RedirectResponse("/login", status_code=302)
+        raise HTTPException(status_code=302, headers={"Location": "/login"})
     try:
         payload = decode_token(token)
     except CredentialsError:
-        raise RedirectResponse("/login", status_code=302)
+        raise HTTPException(status_code=302, headers={"Location": "/login"})
     if payload.get("role") != "admin":
-        raise RedirectResponse("/login", status_code=302)
+        raise HTTPException(status_code=302, headers={"Location": "/login"})
     return payload
 
 
@@ -790,6 +795,12 @@ def _startup() -> None:
 # --- 异常处理器（统一错误码）---
 @app.exception_handler(HTTPException)
 async def http_exc_handler(request: Request, exc: HTTPException):
+    # 3xx 且携带 Location 头的异常（如页面守卫 require_page_admin）：
+    # 按 HTTP 跳转语义返回 RedirectResponse，让浏览器正常 302 跳转，
+    # 而不是被包装成统一错误 JSON（否则 Location 头会丢失、无法跳转）。
+    headers = getattr(exc, "headers", None)
+    if headers and "Location" in headers:
+        return RedirectResponse(headers["Location"], status_code=exc.status_code)
     detail = exc.detail
     if isinstance(detail, dict) and "code" in detail:
         return JSONResponse(status_code=exc.status_code, content=detail)
@@ -1144,7 +1155,7 @@ async def api_logs(operator: Optional[str] = None, action: Optional[str] = None,
 # ===========================================================================
 @app.get("/login")
 async def page_login(request: Request):
-    return TEMPLATES.TemplateResponse("login.html", {"request": request})
+    return TEMPLATES.TemplateResponse(request, "login.html", {"request": request})
 
 
 @app.get("/admin")
@@ -1159,14 +1170,14 @@ async def page_admin(request: Request):
         "logs": conn.execute("SELECT COUNT(*) AS c FROM operation_logs").fetchone()["c"],
     }
     conn.close()
-    return TEMPLATES.TemplateResponse("overview.html",
+    return TEMPLATES.TemplateResponse(request, "overview.html",
                                      {"request": request, "stats": stats, "username": p.get("sub")})
 
 
 @app.get("/admin/kb")
 async def page_kb(request: Request):
     require_page_admin(request)
-    return TEMPLATES.TemplateResponse("kb.html",
+    return TEMPLATES.TemplateResponse(request, "kb.html",
                                      {"request": request,
                                       "categories": KB_CATEGORY_LABELS})
 
@@ -1174,20 +1185,20 @@ async def page_kb(request: Request):
 @app.get("/admin/prompts")
 async def page_prompts(request: Request):
     require_page_admin(request)
-    return TEMPLATES.TemplateResponse("prompts.html", {"request": request})
+    return TEMPLATES.TemplateResponse(request, "prompts.html", {"request": request})
 
 
 @app.get("/admin/audit")
 async def page_audit(request: Request):
     require_page_admin(request)
-    return TEMPLATES.TemplateResponse("audit.html",
+    return TEMPLATES.TemplateResponse(request, "audit.html",
                                      {"request": request, "risk_types": RISK_TYPES})
 
 
 @app.get("/admin/audit/{session_id}")
 async def page_audit_detail(request: Request, session_id: str):
     require_page_admin(request)
-    return TEMPLATES.TemplateResponse("audit_detail.html",
+    return TEMPLATES.TemplateResponse(request, "audit_detail.html",
                                      {"request": request, "session_id": session_id,
                                       "risk_types": RISK_TYPES})
 
@@ -1195,7 +1206,7 @@ async def page_audit_detail(request: Request, session_id: str):
 @app.get("/admin/logs")
 async def page_logs(request: Request):
     require_page_admin(request)
-    return TEMPLATES.TemplateResponse("logs.html", {"request": request})
+    return TEMPLATES.TemplateResponse(request, "logs.html", {"request": request})
 
 
 # ===========================================================================
