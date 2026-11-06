@@ -4,12 +4,15 @@
     python cli.py demo       # 离线演示业务 Agent 三条轨迹（检索→档案→库存→合规→申领HITL）
     python cli.py eval       # 运行 30 条评测用例并打印逐条结果与总分
     python cli.py init       # 初始化 SQLite 数据库与知识库内存索引
+    python cli.py index      # 重建知识库内存索引（文档变更后刷新检索）
+    python cli.py report     # 生成追溯/合规报告（Markdown 打印，可重定向到文件）
+    python cli.py export     # 导出业务数据为 JSON / CSV（默认 JSON）
     python cli.py serve      # 启动 Web 服务（操作员问答 + 管理员后台，需安装 Web 依赖）
     python cli.py config     # 打印当前生效配置（离线/在线、密钥状态等）
 
 说明：
-    demo / eval / init / config 为零依赖离线模式，无需安装任何第三方包即可运行；
-    serve 需要 pip install fastapi uvicorn jinja2 python-multipart 后使用。
+    demo / eval / init / index / report / export / config 为零依赖离线模式，
+    无需安装任何第三方包即可运行；serve 需要 pip install fastapi uvicorn jinja2 python-multipart。
 """
 
 import argparse
@@ -49,6 +52,33 @@ def cmd_config() -> None:
     print(f"离线模式: {config.is_offline(c)}")
 
 
+def cmd_index() -> None:
+    """重建知识库内存索引。"""
+    import agent_core
+    agent_core.init_agent_db()
+    agent_core.ensure_kb_ready()
+    print("[ok] 知识库内存索引已重建。")
+
+
+def cmd_report() -> None:
+    """生成并打印追溯/合规报告。"""
+    import report_generator
+    print(report_generator.to_markdown(report_generator.generate()))
+
+
+def cmd_export() -> None:
+    """导出业务数据为 JSON / CSV。"""
+    import sys
+    import exporter
+    fmt = sys.argv[2] if len(sys.argv) > 2 else "json"
+    out = sys.argv[3] if len(sys.argv) > 3 else f"export.{fmt}"
+    if fmt == "csv":
+        n = exporter.export_csv(exporter.DEFAULT_DB, out)
+    else:
+        n = exporter.export_json(exporter.DEFAULT_DB, out)
+    print(f"[ok] 已导出 {fmt} 报告至 {out}（记录数 {n}）。")
+
+
 def cmd_serve() -> None:
     """启动 Web 服务。"""
     try:
@@ -68,6 +98,9 @@ _HANDLERS = {
     "demo": cmd_demo,
     "eval": cmd_eval,
     "init": cmd_init,
+    "index": cmd_index,
+    "report": cmd_report,
+    "export": cmd_export,
     "config": cmd_config,
     "serve": cmd_serve,
 }
@@ -82,6 +115,11 @@ def main() -> None:
     sub.add_parser("demo", help="离线演示业务 Agent 三条轨迹")
     sub.add_parser("eval", help="运行 30 条评测用例")
     sub.add_parser("init", help="初始化数据库与知识库")
+    sub.add_parser("index", help="重建知识库内存索引")
+    sub.add_parser("report", help="生成追溯/合规报告(Markdown)")
+    p_export = sub.add_parser("export", help="导出业务数据(json/csv)")
+    p_export.add_argument("fmt", nargs="?", default="json", help="导出格式 json|csv")
+    p_export.add_argument("out", nargs="?", default=None, help="输出文件路径")
     sub.add_parser("config", help="打印当前生效配置")
     sub.add_parser("serve", help="启动 Web 服务(问答+后台)")
 
